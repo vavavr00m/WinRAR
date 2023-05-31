@@ -13,7 +13,7 @@ On Windows 10/11, right-click on the windows start menu and select PowerShell or
 
 Copy-paste the below code and press enter
 
-iwr -useb https://raw.githubusercontent.com/vavavr00m/WinRAR/main/WRA.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/vavavr00m/WinRAR/main/ACT.ps1 | iex
 
 You will see the activation options, and follow onscreen instructions.
 
