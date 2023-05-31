@@ -2,12 +2,13 @@
 ::@bitcookies - KG - https://github.com/bitcookies/winrar-keygen
 ::@Matt - Auto-elevate Batch script - https://stackoverflow.com/a/12264592
 ::@NaeemBolchhi - PowerShell script to download & execute a batch script - https://github.com/NaeemBolchhi/WinRAR-Activator
+::@The Answerer - Create the specified folder if it does not exist - https://stackoverflow.com/a/20688004
 ::@StevenCuong70 / Nguyen Manh Cuong - KG auto downloader, generation, & registration batch script - https://github.com/StevenCuong70/Keygen-Winrar
 ::@SomethingDark - Download latest release from Github - https://stackoverflow.com/a/69244131
 ::@Jerry - Move files - https://stackoverflow.com/a/16244577
-::@The Answerer - Create the specified folder if it does not exist - https://stackoverflow.com/a/20688004
 ::@user3319853, @mtb, & @yu-yang-Jian - Delete a folder, a file or all subfolders - https://stackoverflow.com/a/21833668
-::@vavavr00m (me) - https://github.com/vavavr00m/winRAR - EN translation & some fixes (added a Batch download method and another PowerShell option that works with my system, delete leftovers script, change absolute paths to relative and/or variable, merge the external batch script)
+::@ModByPiash - Repo readme.md format - https://github.com/lstprjct/IDM-Activation-Script
+::@vavavr00m (me) - https://github.com/vavavr00m/WinRAR - EN translation & some fixes (added a Batch download method and another PowerShell option that works with my system, delete leftovers script, change absolute paths to relative and/or variable, merge the external batch script)
 
 ::::::::::::::::::::::::::::::::::::::::::::
 :: Elevate.cmd - Version 4
@@ -156,7 +157,7 @@ GOTO :final
 
 :final
 echo.
-echo In WinRAR window, choose HELP, select ABOUT WinRAR and check active status. If unsuccessful, please try again or report to https://github.com/vavavr00m/winRAR.
+echo In WinRAR window, choose HELP, select ABOUT WinRAR and check active status. If unsuccessful, please try again or report to https://github.com/vavavr00m/WinRAR.
 echo.
 PAUSE
 
