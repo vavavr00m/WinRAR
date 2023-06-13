@@ -3,7 +3,7 @@
 
 $DownloadURL = 'https://raw.githubusercontent.com/vavavr00m/WinRAR/main/ACT.bat'
 
-$FilePath = "$env:TEMP\WRA.bat"
+$FilePath = "$env:TEMP\ACT.bat"
 
 try {
     Invoke-WebRequest -Uri $DownloadURL -UseBasicParsing -OutFile $FilePath
