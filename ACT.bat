@@ -8,6 +8,7 @@
 ::@Jerry - Move files - https://stackoverflow.com/a/16244577
 ::@user3319853, @mtb, & @yu-yang-Jian - Delete a folder, a file or all subfolders - https://stackoverflow.com/a/21833668
 ::@ModByPiash - Repo readme.md format - https://github.com/lstprjct/IDM-Activation-Script
+::@Tux 528 - GH download specific release - https://nsaneforums.com/profile/105674-tux-528/
 ::@vavavr00m (me) - https://github.com/vavavr00m/WinRAR - EN translation & some fixes (added a Batch download method and another PowerShell option that works with my system, delete leftovers script, change absolute paths to relative and/or variable, merge the external batch script)
 
 ::::::::::::::::::::::::::::::::::::::::::::
@@ -90,30 +91,34 @@ Echo This is a 64bit operating system
 set bit=x64
 set notbit=x86
 set winrarpath=%PROGRAMFILES%\WinRAR
-for /f "tokens=1,* delims=:" %%A in ('curl -ks https://api.github.com/repos/bitcookies/winrar-keygen/releases/latest ^| find "browser_download_url"') do (
-    curl -kOL %%B
-)
-
-::works with w10 - powershell -command "Invoke-WebRequest -OutFile bin\Winrar_keygen.exe https://github.com/bitcookies/winrar-keygen/releases/download/v2.1.2/winrar-keygen-x64.exe"
-::original - powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/bitcookies/winrar-keygen/releases/download/v2.1.2/winrar-keygen-x64.exe', 'bin\Winrar_keygen.exe')"
-
-move winrar-keygen-%bit%.exe "%~dp0\bin"
-goto Registration
+goto :DOWNLOAD
 
 :32BIT
 call :ColorText 0a "This is a 32bit operating system"
 set bit=x86
 set notbit=x64
 set winrarpath=%PROGRAMFILES(X86)%\WinRAR
-for /f "tokens=1,* delims=:" %%A in ('curl -ks https://api.github.com/repos/bitcookies/winrar-keygen/releases/latest ^| find "browser_download_url"') do (
-    curl -kOL %%B
-)
+goto :DOWNLOAD
 
+:DOWNLOAD
+ECHO Retrieving download link of the latest release...
+SET "URL=https://github.com/bitcookies/winrar-keygen"
+
+FOR /F "tokens=3,4 delims=/" %%A IN ("%URL%") DO SET "API_URL=https://api.github.com/repos/%%A/%%B/releases/latest"
+FOR /F "usebackq tokens=2" %%A IN (`curl -L -s --ssl-no-revoke %API_URL% ^| FINDSTR /R /I /C:"browser_download_url.*/winrar-keygen-%bit%\.exe" 2^>NUL`) DO SET "download_link=%%~A"
+
+ECHO Download link found..
+ECHO;
+ECHO Downloading the latest file...
+curl -kOL %download_link%
+
+IF EXIST winrar-keygen-%bit%.exe move winrar-keygen-%bit%.exe "%~dp0\bin" && goto Registration
+
+::downloads all releases - for /f "tokens=1,* delims=:" %%A in ('curl -ks https://api.github.com/repos/bitcookies/winrar-keygen/releases/latest ^| find "browser_download_url"') do (
+::  curl -kOL %%B
+::)
 ::works with w10 - powershell -command "Invoke-WebRequest -OutFile bin\Winrar_keygen.exe https://github.com/bitcookies/winrar-keygen/releases/download/v2.1.2/winrar-keygen-x86.exe"
 ::original - powershell -Command "(New-Object Net.WebClient).DownloadFile('https://github.com/bitcookies/winrar-keygen/releases/download/v2.1.2/winrar-keygen-x86.exe', 'bin\Winrar_keygen.exe')"
-
-move winrar-keygen-%bit%.exe "%~dp0\bin"
-goto Registration
 
 :REGISTRATION
 
