@@ -90,7 +90,7 @@ set notbit=x86
 ECHO.
 ECHO This is a %bit% operating system
 set "winrarpath=%PROGRAMFILES%\WinRAR"
-goto :CHECKIFINSTALLED
+goto :SETTEMPDIR
 
 ====================================
 :32BIT
@@ -101,18 +101,24 @@ ECHO.
 ECHO This is a %bit% operating system
 ECHO.
 set "winrarpath=%PROGRAMFILES(X86)%\WinRAR"
-goto :CHECKIFINSTALLED
+goto :SETTEMPDIR
 
 ====================================
-:CHECKIFINSTALLED
+:SETTEMPDIR
 ====================================
 ECHO.
 set /p "temppath=Where do you want to save temporary files? "
 IF [%temppath%] EQU [] SET "temppath=%~dp0WRA"
 ECHO.
-IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created.
+IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created. && goto :CHECKIFINSTALLED
+EXIT b\
+
+====================================
+:CHECKIFINSTALLED
+====================================
 ECHO.
 IF EXIST "%winrarpath%\winrar.exe" ( ECHO WinRAR is installed. && goto :PREREGISTRATION ) ELSE ( ECHO WinRAR undetected. && goto :DOWNLOADER )
+EXIT b\
 
 ====================================
 :CHECKINSTALLER
@@ -129,10 +135,10 @@ EXIT /b
 ====================================
 ECHO.
 ECHO TESTING
+pause>nul
 ECHO.
 FOR %%f IN ( "%savepath%\winrar-%bit%-*.exe" ) do set "installerpath=%%f"
 IF EXIST "%installerpath%" ( ECHO "%installerpath%" exists && goto :STARTINSTALL ) ELSE ( ECHO Unable to locate WinRAR installer. && goto :ASKINSTALLERFILEPATH )
-ECHO.
 pause>nul
 EXIT /b
 
@@ -149,7 +155,7 @@ EXIT /b
 ====================================
 ECHO.
 ECHO Installing..
-call :Auto-elevate && start "" /wait "%installerpath%" /S && goto :CHECKIFINSTALLED
+start "" /wait "%installerpath%" /S && goto :CHECKIFINSTALLED
 EXIT /b
 
 ====================================
@@ -178,9 +184,9 @@ EXIT /b
 ECHO.
 ECHO This is just a placeholder for future improvement - silently detect/download/install requirements of MSbuild & kg project to be able to compile from source seamlessly
 ::set /p /i "QUERYBUILD=Do you want to compile from source [y/N]? "
-IF [%QUERYBUILD%]==[] goto :BUILDFROMSRC
-IF [%QUERYBUILD%]==[y] call :COMPILE
-IF [%QUERYBUILD%]==[n] goto: REGISTRATION 
+IF [%QUERYBUILD%] EQU [] goto :BUILDFROMSRC
+IF [%QUERYBUILD%] EQU [y] call :COMPILE
+IF [%QUERYBUILD%] EQU [n] goto: REGISTRATION 
 EXIT /b
 
 ====================================
@@ -246,10 +252,12 @@ EXIT /b
 :DOWNLOADER
 ====================================
 @echo off
+ECHO.
 set local
+ECHO.
 set "url=https://www.rarlab.com/download.htm"
 set /p "savepath=Where do you want to download the latest WinRAR installer (Default: %temppath%)? "
-IF "%savepath%"=="" set "savepath=%temppath%"
+IF [%savepath%] EQU [] set "savepath=%temppath%"
 IF NOT EXIST "%savepath%" MKDIR "%savepath%" && ECHO "%savepath%"
 
 cscript /nologo /e:jscript "%~f0" "%url%" "%savepath%"
