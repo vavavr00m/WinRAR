@@ -223,8 +223,6 @@ xcopy /s /x /y "%mypath:~0,-1%" "%winrarpath%\"
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%\WinRAR.exe"
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%"
 
-pause>nul
-
 GOTO :leftovers
 EXIT /b
 
