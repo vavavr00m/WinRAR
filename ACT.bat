@@ -134,9 +134,6 @@ EXIT /b
 :CHECKINSTALLERFILEPATH
 ====================================
 ECHO.
-ECHO TESTING
-pause>nul
-ECHO.
 FOR %%f IN ( "%savepath%\winrar-%bit%-*.exe" ) do set "installerpath=%%f"
 IF EXIST "%installerpath%" ( ECHO "%installerpath%" exists && goto :STARTINSTALL ) ELSE ( ECHO Unable to locate WinRAR installer. && goto :ASKINSTALLERFILEPATH )
 pause>nul
