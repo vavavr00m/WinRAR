@@ -116,7 +116,7 @@ goto :SETTEMPDIR
 ====================================
 ECHO.
 
-cd /d "%tmp%"
+cd /d "%USERPROFILE%\Downloads\"
 
 set /p "temppath=Where do you want to save temporary files? "
 IF "%temppath%" EQU [] SET "temppath=%~dp0\WRA\"
