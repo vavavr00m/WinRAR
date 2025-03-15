@@ -121,7 +121,9 @@ cd /d "%USERPROFILE%\Downloads\"
 set /p "temppath=Where do you want to save temporary files? "
 IF "%temppath%" EQU [] SET "temppath=%~dp0\WRA\"
 ECHO.
-IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created. && goto :CHECKIFINSTALLED
+IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created.
+PAUSE
+goto :CHECKIFINSTALLED
 EXIT b\
 
 ====================================
