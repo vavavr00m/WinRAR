@@ -108,7 +108,7 @@ goto :SETTEMPDIR
 ====================================
 ECHO.
 set /p "temppath=Where do you want to save temporary files? "
-IF [%temppath%] EQU [] SET "temppath=%~dp0WRA"
+IF [%temppath%] EQU [] SET "temppath=%tmp%WRA"
 ECHO.
 IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created. && goto :CHECKIFINSTALLED
 EXIT b\
