@@ -84,8 +84,6 @@ CLS
  ::START
  ::::::::::::::::::::::::::::
 
-cd /d "%~dp0"
-
 COLOR 1F
 
 CLS
@@ -117,8 +115,9 @@ goto :SETTEMPDIR
 :SETTEMPDIR
 ====================================
 ECHO.
+
 set /p "temppath=Where do you want to save temporary files? "
-IF [%temppath%] EQU [] SET "temppath=%tmp%\WRA\"
+IF "%temppath%" EQU [] SET "temppath=%~dp0\WRA\" && cd /d "%temppath%"
 ECHO.
 IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created. && goto :CHECKIFINSTALLED
 EXIT b\
