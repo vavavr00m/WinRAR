@@ -362,7 +362,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "    $lang=[regex]::Replace($name.Groups[1].Value,'<[^>]+>','').Trim();" ^
     "    if(!$lang) { continue };" ^
     "    $href=$link.Groups[1].Value;" ^
-    "    if($href.StartsWith('/')) { $href='https://www.rarlab.com'+$href } elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') }
+    "    if($href.StartsWith('/')) { $href='https://www.rarlab.com'+$href } elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') } ^
     "    elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') };" ^
     "    Write-Output ($lang+'|'+$href);" ^
     "    $matched++;" ^
