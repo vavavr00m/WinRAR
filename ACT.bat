@@ -145,7 +145,7 @@ EXIT /b
 :CHECKIFINSTALLED
 ====================================
 ECHO.
-IF EXIST "%winrarpath%\winrar.exe" ( ECHO WinRAR is installed. && goto :PREREGISTRATION ) ELSE ( ECHO WinRAR undetected. && goto :SELECTLANGUAGE )
+IF EXIST "%winrarpath%\winrar.exe" ( ECHO WinRAR is installed. && goto :PREREGISTRATION ) ELSE ( ECHO WinRAR undetected. && goto :DOWNLOADER )
 EXIT b\
 
 ====================================
@@ -315,115 +315,8 @@ PAUSE>nul
 EXIT /b
 
 ====================================
-:SELECTLANGUAGE
-====================================
-ECHO.
-ECHO Select WinRAR language:
-ECHO.
-ECHO [1] English
-ECHO [2] Arabic
-ECHO [3] Armenian
-ECHO [4] Azerbaijani
-ECHO [5] Belarusian
-ECHO [6] Bulgarian
-ECHO [7] Catalan
-ECHO [8] Chinese Simplified
-ECHO [9] Chinese Traditional
-ECHO [10] Croatian
-ECHO [11] Czech
-ECHO [12] Danish
-ECHO [13] Dutch
-ECHO [14] Estonian
-ECHO [15] Finnish
-ECHO [16] French
-ECHO [17] German
-ECHO [18] Greek
-ECHO [19] Hebrew
-ECHO [20] Hungarian
-ECHO [21] Indonesian
-ECHO [22] Italian
-ECHO [23] Japanese
-ECHO [24] Korean
-ECHO [25] Lithuanian
-ECHO [26] Macedonian
-ECHO [27] Norwegian
-ECHO [28] Persian
-ECHO [29] Polish
-ECHO [30] Portuguese
-ECHO [31] Portuguese Brazilian
-ECHO [32] Romanian
-ECHO [33] Russian
-ECHO [34] Serbian Cyrillic
-ECHO [35] Serbian Latin
-ECHO [36] Slovak
-ECHO [37] Slovenian
-ECHO [38] Spanish
-ECHO [39] Swedish
-ECHO [40] Thai
-ECHO [41] Turkish
-ECHO [42] Ukrainian
-ECHO [43] Uzbek
-ECHO [44] Valencian
-ECHO [45] Vietnamese
-ECHO.
-
-set /p "langchoice=Enter language number: "
-
-set "langsuffix="
-
-if "%langchoice%"=="1"  set "langsuffix="
-if "%langchoice%"=="2"  set "langsuffix=ar"
-if "%langchoice%"=="3"  set "langsuffix=am"
-if "%langchoice%"=="4"  set "langsuffix=az"
-if "%langchoice%"=="5"  set "langsuffix=by"
-if "%langchoice%"=="6"  set "langsuffix=bg"
-if "%langchoice%"=="7"  set "langsuffix=ca"
-if "%langchoice%"=="8"  set "langsuffix=cn"
-if "%langchoice%"=="9"  set "langsuffix=ct"
-if "%langchoice%"=="10" set "langsuffix=hr"
-if "%langchoice%"=="11" set "langsuffix=cz"
-if "%langchoice%"=="12" set "langsuffix=dk"
-if "%langchoice%"=="13" set "langsuffix=nl"
-if "%langchoice%"=="14" set "langsuffix=ee"
-if "%langchoice%"=="15" set "langsuffix=fi"
-if "%langchoice%"=="16" set "langsuffix=fr"
-if "%langchoice%"=="17" set "langsuffix=de"
-if "%langchoice%"=="18" set "langsuffix=gr"
-if "%langchoice%"=="19" set "langsuffix=he"
-if "%langchoice%"=="20" set "langsuffix=hu"
-if "%langchoice%"=="21" set "langsuffix=id"
-if "%langchoice%"=="22" set "langsuffix=it"
-if "%langchoice%"=="23" set "langsuffix=jp"
-if "%langchoice%"=="24" set "langsuffix=kr"
-if "%langchoice%"=="25" set "langsuffix=lt"
-if "%langchoice%"=="26" set "langsuffix=mk"
-if "%langchoice%"=="27" set "langsuffix=no"
-if "%langchoice%"=="28" set "langsuffix=ir"
-if "%langchoice%"=="29" set "langsuffix=pl"
-if "%langchoice%"=="30" set "langsuffix=pt"
-if "%langchoice%"=="31" set "langsuffix=br"
-if "%langchoice%"=="32" set "langsuffix=ro"
-if "%langchoice%"=="33" set "langsuffix=ru"
-if "%langchoice%"=="34" set "langsuffix=sc"
-if "%langchoice%"=="35" set "langsuffix=sl"
-if "%langchoice%"=="36" set "langsuffix=sk"
-if "%langchoice%"=="37" set "langsuffix=si"
-if "%langchoice%"=="38" set "langsuffix=es"
-if "%langchoice%"=="39" set "langsuffix=se"
-if "%langchoice%"=="40" set "langsuffix=th"
-if "%langchoice%"=="41" set "langsuffix=tr"
-if "%langchoice%"=="42" set "langsuffix=uk"
-if "%langchoice%"=="43" set "langsuffix=uz"
-if "%langchoice%"=="44" set "langsuffix=va"
-if "%langchoice%"=="45" set "langsuffix=vn"
-
-if "%langchoice%"=="" (
-    goto :SELECTLANGUAGE
-) else (
-    goto :DOWNLOADER
-)
-
 :DOWNLOADER
+====================================
 @echo off
 ECHO.
 ECHO =============================
