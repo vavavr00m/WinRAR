@@ -196,9 +196,12 @@ ECHO.
 ECHO Download link found.. 
 ECHO;
 ECHO Downloading the latest file...
-curl -kOL %download_link%
+
+for %%F in ("%download_link%") do set "filename=%%~nxF"
+curl -kL -o "%savepath%\%filename%" "%download_link%"
+
 ECHO.
-IF EXIST "%~dp0winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%~dp0winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :BUILDFROMSRC )
+IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%savepath%\winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :BUILDFROMSRC )
 
 EXIT /b
 
