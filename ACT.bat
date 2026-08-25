@@ -227,29 +227,41 @@ IF NOT DEFINED input set "input=ABCDEFG"
 ECHO.
 ECHO The name you just entered is: %input%
 ECHO.
+ECHO Checking for keygen...
 
-ECHO Checking paths...
 ECHO savepath=[%savepath%]
 ECHO temppath=[%temppath%]
 ECHO bit=[%bit%]
 ECHO.
 
-ECHO Checking savepath:
-ECHO "%savepath%\winrar-keygen-%bit%.exe"
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
-    ECHO File found in savepath.
+    ECHO Found executable in savepath:
+    ECHO "%savepath%\winrar-keygen-%bit%.exe"
+    set "keygenpath=%savepath%\winrar-keygen-%bit%.exe"
+) ELSE IF EXIST "%temppath%\winrar-keygen-%bit%.exe" (
+    ECHO Found executable in temppath:
+    ECHO "%temppath%\winrar-keygen-%bit%.exe"
+    set "keygenpath=%temppath%\winrar-keygen-%bit%.exe"
 ) ELSE (
-    ECHO File NOT found in savepath.
+    ECHO ERROR: Could not find the executable.
+    ECHO.
+    ECHO Checked:
+    ECHO "%savepath%\winrar-keygen-%bit%.exe"
+    ECHO "%temppath%\winrar-keygen-%bit%.exe"
+    EXIT /B 1
 )
 
 ECHO.
-ECHO Checking temppath:
-ECHO "%temppath%\winrar-keygen-%bit%.exe"
-IF EXIST "%temppath%\winrar-keygen-%bit%.exe" (
-    ECHO File found in temppath.
-) ELSE (
-    ECHO File NOT found in temppath.
+ECHO Selected path:
+ECHO "%keygenpath%"
+
+"%keygenpath%\winrar-keygen-%bit%.exe" "%input%" "License" >> "%keygenpath%\rarreg.key"
+
+SETLOCAL EnableDelayedExpansion
+for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
+    set "DEL=%%a"
 )
+ENDLOCAL
 
 ECHO.
 PAUSE
