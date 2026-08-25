@@ -275,11 +275,16 @@ EXIT /b
 ====================================
 @echo off
 ECHO.
-set local
+setlocal
 ECHO.
 set "url=https://www.rarlab.com/download.htm"
 set /p "savepath=Where do you want to download the latest WinRAR installer (Default: %temppath%)? "
-IF [%savepath%] EQU [] set "savepath=%temppath%"
+
+echo.
+echo You entered: "%savepath%"
+pause
+
+IF "%savepath%"=="" set "savepath=%temppath%"
 IF NOT EXIST "%savepath%" MKDIR "%savepath%" && ECHO "%savepath%"
 
 cscript /nologo /e:jscript "%~f0" "%url%" "%savepath%"
