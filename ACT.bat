@@ -349,7 +349,7 @@ if not exist "%savepath%" (
 @echo off
 setlocal
 
-set "url=http://www.rarlab.com/download.htm"
+set "url=https://www.rarlab.com/download.htm"
 
 cscript /nologo /e:jscript "%~f0" "%url%" "%savepath%"
 
