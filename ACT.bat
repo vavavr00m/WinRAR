@@ -193,7 +193,7 @@ ECHO Downloading medicine..
 SET "URL=https://github.com/bitcookies/winrar-keygen"
 
 FOR /F "tokens=3,4 delims=/" %%A IN ("%URL%") DO SET "API_URL=https://api.github.com/repos/%%A/%%B/releases/latest"
-FOR /F "usebackq tokens=2" %%A IN (`curl -L -s --ssl-no-revoke %API_URL% ^| FINDSTR /R /I /C:"browser_download_url.*/winrar-keygen-%bit%\.exe" 2^>NUL`) DO SET "download_link=%%~A"
+FOR /F "usebackq tokens=2" %%A IN (`curl -L -s --ssl-no-revoke %API_URL% ^| FINDSTR /R /I /C:"browser_download_url.*[/]winrar-keygen-%bit%\.exe" 2^>NUL`) DO SET "download_link=%%~A"
 
 ECHO.
 ECHO Download link found.. 
