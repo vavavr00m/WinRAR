@@ -13,7 +13,8 @@
 ::@ModByPiash - Repo readme.md format - https://github.com/lstprjct/IDM-Activation-Script
 ::@dbenham - Make a batch delete itself - https://stackoverflow.com/a/20333575/21996598
 ::@Tux 528 - GH download specific release - https://nsaneforums.com/profile/105674-tux-528/
-::@rojo - Download & install latest WinRAR from batch - https://stackoverflow.com/a/15777517/21996598 | modified using ChatGPT
+::@Something Dark - Download latest GitHub release- https://stackoverflow.com/a/69244131/21996598
+::@rojo - Download & install latest WinRAR from batch - https://stackoverflow.com/a/15777517/21996598 | @vavavr00m udpated using ChatGPT to ensure that it doesn't fail because the dl page no longer offers architecture, added dynamically fetching languages list from dl page and prompting user to select, stores language choice in a %locale% variable, in case needed.
 ::@vavavr00m (me) - https://github.com/vavavr00m/WinRAR - EN translation & some fixes (added a Batch download method and another PowerShell option that works with my system, delete leftovers script, change absolute paths to relative and/or variable, merge the external batch script)
 
 @echo off
@@ -191,9 +192,9 @@ REM ====================================
 
 ECHO.
 ECHO How do you want to obtain the medicine?
-ECHO [a] Auto-download from source repository
-ECHO [b] Manually download from source repository (WARNING: Not recommended if you don't know where to get it from)
-ECHO [c] Build from source (WARNING: This is the recommended method but it might take up a lot of space)
+ECHO [a] Auto-downloads from source repository (NOTE: Easy method)
+ECHO [b] Manual (WARNING: Not recommended if you don't know what you're doing)
+ECHO [c] Build from source (NOTE: This is the recommended method if you want to build the medicine from source but it might take up a lot of space)
 set /p "QUERYPREREG= Please select from the choices above: "
 IF /i "%QUERYPREREG%"=="a" GOTO :AUTODLFROMSRC
 IF /i "%QUERYPREREG%"=="b" GOTO :MANUALDL
@@ -243,6 +244,280 @@ REM ====================================
 REM ====================================
 ECHO.
 ECHO This is just a placeholder for future improvement. Silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly
+
+REM ==================================== STEP 1 ====================================
+REM Detect repo's default branch, download main source and extract to C:
+REM ==================================== STEP 1 ====================================
+
+setlocal
+
+set "REPO=bitcookies/winrar-keygen"
+set "ZIPFILE=%temppath%\HEAD.zip"
+
+echo Downloading latest source...
+
+curl -fL -o "%ZIPFILE%" "https://github.com/%REPO%/archive/refs/heads/HEAD.zip"
+
+if errorlevel 1 (
+    echo.
+    echo Download failed.
+    exit /b 1
+)
+
+if not exist "%ZIPFILE%" (
+    echo.
+    echo Download failed: file was not created.
+    exit /b 1
+)
+
+for %%A in ("%ZIPFILE%") do if %%~zA==0 (
+    echo.
+    echo Download failed: file is empty.
+    exit /b 1
+)
+
+powershell -NoProfile -Command "try { [System.IO.Compression.ZipFile]::OpenRead('%ZIPFILE%').Dispose(); exit 0 } catch { exit 1 }"
+
+if errorlevel 1 (
+    echo.
+    echo Download failed: file is not a valid ZIP archive.
+    exit /b 1
+)
+
+echo.
+echo Download successful.
+echo ZIP verified:
+echo "%ZIPFILE%"
+
+endlocal
+
+REM ==================================== STEP 2 ====================================
+REM Download the latest hMSBuild.bat from source's repo and move it to C:\Windows
+REM ==================================== STEP 2 ====================================
+
+ECHO.
+ECHO Downloading the latest hMSBuild release from its repo
+
+set "HMSBUILD=%SystemRoot%\hMSBuild.bat"
+
+curl -LO --output-dir "%SystemRoot%" https://github.com/3F/hMSBuild/releases/latest/download/hMSBuild.bat
+
+if errorlevel 1 (
+    ECHO.
+    ECHO Download failed.
+    exit /b 1
+)
+
+if not exist "%HMSBUILD%" (
+    ECHO.
+    ECHO Download failed: file was not created.
+    exit /b 1
+)
+
+for %%A in ("%HMSBUILD%") do if %%~zA==0 (
+    ECHO.
+    ECHO Download failed: file is empty.
+    exit /b 1
+)
+
+ECHO.
+ECHO Download successful.
+ECHO File verified:
+ECHO "%HMSBUILD%"
+pause >nul
+
+REM ==================================== STEP 3 ====================================
+REM Check build requirements
+REM ==================================== STEP 3 ====================================
+
+ECHO.
+ECHO ============================================
+ECHO Checking build requirements...
+ECHO ============================================
+ECHO.
+
+set "BUILD_REQUIREMENTS_MISSING="
+
+REM ------------------------------------------------------------
+REM hMSBuild
+REM ------------------------------------------------------------
+
+if not exist "%HMSBUILD%" (
+    ECHO [MISSING] hMSBuild.bat
+    set "BUILD_REQUIREMENTS_MISSING=1"
+    goto :CHECK_VCPKG
+)
+
+ECHO [FOUND]   hMSBuild.bat
+
+set "MSBUILD="
+
+for /f "usebackq delims=" %%A in (`call "%HMSBUILD%" -find "MSBuild\**\Bin\MSBuild.exe" 2^>nul`) do (
+    if not defined MSBUILD set "MSBUILD=%%A"
+)
+
+if not defined MSBUILD (
+    ECHO [MISSING] Visual Studio / MSBuild
+    ECHO          hMSBuild could not locate a usable MSBuild.exe
+    set "BUILD_REQUIREMENTS_MISSING=1"
+) else (
+    ECHO [FOUND]   MSBuild
+    ECHO           %MSBUILD%
+)
+
+REM ------------------------------------------------------------
+REM Check the C++ toolset using the installation discovered
+REM by hMSBuild.
+REM
+REM Get the directory containing MSBuild, then walk back to
+REM the Visual Studio installation root.
+REM ------------------------------------------------------------
+
+if defined MSBUILD (
+
+    set "MSBUILD_DIR=%~dpMSBUILD"
+
+    REM Remove trailing backslash
+    set "MSBUILD_DIR=%MSBUILD_DIR:~0,-1%"
+
+    REM We intentionally don't assume a specific VS edition/path.
+    REM Find VC\Tools\MSVC relative to the VS installation.
+    set "VSROOT="
+
+    for /f "delims=" %%A in ('where /r "%MSBUILD_DIR%\..\.." cl.exe 2^>nul') do (
+        if not defined VSROOT set "VSROOT=%%~dpA"
+    )
+
+    if not defined VSROOT (
+        ECHO [MISSING] MSVC C++ compiler
+        set "BUILD_REQUIREMENTS_MISSING=1"
+    ) else (
+        ECHO [FOUND]   MSVC C++ compiler
+    )
+)
+
+REM ------------------------------------------------------------
+REM Check for v145 toolset
+REM ------------------------------------------------------------
+
+if defined VSROOT (
+
+    set "VCTOOLSROOT="
+
+    for %%A in ("%VSROOT%") do (
+        set "VCTOOLSROOT=%%~dpA..\..\..\..\..\VC\Tools\MSVC"
+    )
+
+    set "V145FOUND="
+
+    for /d %%A in ("%VCTOOLSROOT%\14.5*") do (
+        set "V145FOUND=%%~nxA"
+    )
+
+    if not defined V145FOUND (
+        ECHO [MISSING] MSVC v145 toolset
+        set "BUILD_REQUIREMENTS_MISSING=1"
+    ) else (
+        ECHO [FOUND]   MSVC v145
+        ECHO           %V145FOUND%
+    )
+)
+
+REM ============================================================
+:CHECK_VCPKG
+REM ============================================================
+
+ECHO.
+ECHO Checking vcpkg...
+ECHO.
+
+REM ------------------------------------------------------------
+REM Locate vcpkg without assuming an installation directory
+REM ------------------------------------------------------------
+
+set "VCPKG="
+
+for /f "delims=" %%A in ('where vcpkg.exe 2^>nul') do (
+    if not defined VCPKG set "VCPKG=%%A"
+)
+
+if not defined VCPKG if defined VCPKG_INSTALLATION_ROOT (
+    if exist "%VCPKG_INSTALLATION_ROOT%\vcpkg.exe" (
+        set "VCPKG=%VCPKG_INSTALLATION_ROOT%\vcpkg.exe"
+    )
+)
+
+if not defined VCPKG (
+    ECHO [MISSING] vcpkg
+    set "BUILD_REQUIREMENTS_MISSING=1"
+    goto :BUILD_REQUIREMENTS_RESULT
+)
+
+ECHO [FOUND]   vcpkg
+ECHO           %VCPKG%
+
+REM ------------------------------------------------------------
+REM Required packages for the repository
+REM ------------------------------------------------------------
+
+ECHO.
+ECHO Checking vcpkg packages...
+ECHO.
+
+"%VCPKG%" list mpir:x86-windows-static 2>nul | findstr /i /b /c:"mpir:x86-windows-static" >nul
+if errorlevel 1 (
+    ECHO [MISSING] mpir:x86-windows-static
+    set "BUILD_REQUIREMENTS_MISSING=1"
+) else (
+    ECHO [FOUND]   mpir:x86-windows-static
+)
+
+"%VCPKG%" list mpir:x64-windows-static 2>nul | findstr /i /b /c:"mpir:x64-windows-static" >nul
+if errorlevel 1 (
+    ECHO [MISSING] mpir:x64-windows-static
+    set "BUILD_REQUIREMENTS_MISSING=1"
+) else (
+    ECHO [FOUND]   mpir:x64-windows-static
+)
+
+"%VCPKG%" list gmp:x64-windows 2>nul | findstr /i /b /c:"gmp:x64-windows" >nul
+if errorlevel 1 (
+    ECHO [MISSING] gmp:x64-windows
+    set "BUILD_REQUIREMENTS_MISSING=1"
+) else (
+    ECHO [FOUND]   gmp:x64-windows
+)
+
+"%VCPKG%" list gmp:arm64-windows-static 2>nul | findstr /i /b /c:"gmp:arm64-windows-static" >nul
+if errorlevel 1 (
+    ECHO [MISSING] gmp:arm64-windows-static
+    set "BUILD_REQUIREMENTS_MISSING=1"
+) else (
+    ECHO [FOUND]   gmp:arm64-windows-static
+)
+
+REM ============================================================
+:BUILD_REQUIREMENTS_RESULT
+REM ============================================================
+
+ECHO.
+ECHO ============================================
+
+if defined BUILD_REQUIREMENTS_MISSING (
+    ECHO BUILD REQUIREMENTS: MISSING
+    ECHO ============================================
+    ECHO.
+    exit /b 1
+)
+
+ECHO BUILD REQUIREMENTS: OK
+ECHO ============================================
+ECHO.
+
+REM ==================================== STEP 4 ====================================
+REM 
+REM ==================================== STEP 4 ====================================
+
 >nul pause
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%savepath%\winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :PREREGISTRATION )
 EXIT /b
@@ -279,7 +554,7 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO Checked:
     ECHO "%savepath%\winrar-keygen-%bit%.exe"
     ECHO "%temppath%\winrar-keygen-%bit%.exe"
-    EXIT /B 1
+    GOTO :PREREGISTRATION
 )
 
 for %%A in ("%kgpath%") do set "kgroot=%%~dpA"
@@ -341,7 +616,7 @@ REM ====================================
 ECHO.
 ECHO In WinRAR window, choose HELP, select ABOUT WinRAR and check active status. If unsuccessful, please try again or report to https://github.com/vavavr00m/WinRAR.
 ECHO.
-PAUSE>nul
+pause >nul
 EXIT /b
 
 REM ====================================
