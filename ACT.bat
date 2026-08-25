@@ -261,7 +261,7 @@ ECHO.
 ECHO KG root: "%keygenroot%"
 ECHO KG path: "%keygenpath%"
 PAUSE
-
+ECHO.
 ECHO Creating rarreg.key...
 "%keygenpath%" "%input%" "License" >> "%keygenroot%\rarreg.key"
 
@@ -269,10 +269,13 @@ SETLOCAL EnableDelayedExpansion
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
     set "DEL=%%a"
 )
-ENDLOCAL
 
 ECHO.
-IF EXIST "%keygenroot%\rarreg.key" ECHO "rarreg.key exists" ELSE "rarreg.key not found"
+IF EXIST "%keygenroot%\rarreg.key" (
+    ECHO rarreg.key exists
+) ELSE (
+    ECHO rarreg.key not found
+)
 PAUSE
 
 GOTO :Beginoffile
