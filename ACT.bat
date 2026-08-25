@@ -230,12 +230,13 @@ IF NOT DEFINED input set "input=ABCDEFG"
 ECHO.
 ECHO The name you just entered is: %input%
 ECHO.
-ECHO Checking for keygen...
+ECHO Checking for paths...
 
 ECHO savepath=[%savepath%]
 ECHO temppath=[%temppath%]
 ECHO bit=[%bit%]
 ECHO.
+PAUSE
 
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in savepath:
