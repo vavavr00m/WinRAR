@@ -274,9 +274,10 @@ ECHO.
 IF EXIST "%kgroot%\rarreg.key" (
     ECHO rarreg.key exists
 ) ELSE (
-    ECHO rarreg.key not found
+    ECHO rarreg.key not found. Exiting...
+    PAUSE
+    EXIT /b
 )
-PAUSE
 
 GOTO :Beginoffile
 EXIT /b
