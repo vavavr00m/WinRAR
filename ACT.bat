@@ -236,7 +236,6 @@ ECHO savepath=[%savepath%]
 ECHO temppath=[%temppath%]
 ECHO bit=[%bit%]
 ECHO.
-PAUSE
 
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in savepath:
@@ -260,9 +259,10 @@ for %%A in ("%kgpath%") do set "kgroot=%%~dpA"
 ECHO.
 ECHO KG root: "%kgroot%"
 ECHO KG path: "%kgpath%"
-PAUSE
+
 ECHO.
 ECHO Creating rarreg.key...
+ECHO.
 "%kgpath%" "%input%" "License" >> "%kgroot%\rarreg.key"
 
 SETLOCAL EnableDelayedExpansion
@@ -286,9 +286,7 @@ EXIT /b
 ====================================
 COLOR 1F
 
-set "kgroot=%kgroot:~0,-1%"
-
-xcopy /s /x /y "%keygenroot%\rarreg.key" "%winrarpath%\"
+xcopy /s /x /y %keygenroot%\rarreg.key" "%winrarpath%\"
 
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%\WinRAR.exe"
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%"
