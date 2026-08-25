@@ -269,6 +269,7 @@ SETLOCAL EnableDelayedExpansion
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
     set "DEL=%%a"
 )
+ENDLOCAL
 
 ECHO.
 IF EXIST "%kgroot%\rarreg.key" (
@@ -321,6 +322,7 @@ EXIT /b
 @echo off
 ECHO.
 set "url=https://www.rarlab.com/download.htm"
+setlocal
 set /p "savepath=Where do you want to download the latest WinRAR installer (Default: %temppath%)? "
 
 echo.
