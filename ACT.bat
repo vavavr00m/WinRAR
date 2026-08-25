@@ -262,7 +262,7 @@ ECHO KG path: "%kgpath%"
 
 ECHO.
 ECHO Creating rarreg.key...
-ECHO.
+
 "%kgpath%" "%input%" "License" >> "%kgroot%\rarreg.key"
 
 SETLOCAL EnableDelayedExpansion
