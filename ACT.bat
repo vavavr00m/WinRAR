@@ -317,25 +317,28 @@ EXIT /b
 :: ====================================
 :DOWNLOADER
 :: ====================================
+@echo off
 
-ECHO.
-ECHO =============================
-ECHO WinRAR Downloader
-ECHO =============================
-ECHO.
+echo.
+echo =============================
+echo WinRAR Downloader
+echo =============================
+echo.
 
-set "url=https://www.rarlab.com/download.htm"
+set "RARLAB_URL=https://www.rarlab.com/download.htm"
 
-set /p "savepath=Where do you want to download the latest WinRAR installer (Default: %temppath%)? "
+set /p "savepath=Where do you want to download WinRAR? (Default: %temppath%) "
 
 if "%savepath%"=="" set "savepath=%temppath%"
 
 echo.
-echo You selected: "%savepath%"
+echo Download directory:
+echo "%savepath%"
 echo.
 
 if not exist "%savepath%" (
-    mkdir "%savepath%"
+    mkdir "%savepath%" 2>nul
+
     if errorlevel 1 (
         echo ERROR: Unable to create "%savepath%"
         pause
@@ -343,78 +346,58 @@ if not exist "%savepath%" (
     )
 )
 
-echo Retrieving LIVE WinRAR language list from RARLAB...
-echo.
+:: ------------------------------------
+:: Create temporary language list
+:: ------------------------------------
 
-set "langfile=%temp%\winrar_languages_%RANDOM%.txt"
+set "langfile=%temp%\winrar_languages_%RANDOM%_%RANDOM%.txt"
+
+echo Contacting RARLAB...
+echo.
+echo Retrieving live WinRAR language list...
 
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference='Stop';" ^
     "try {" ^
-    "    $html = (Invoke-WebRequest -UseBasicParsing '%url%').Content;" ^
+    "    $page = Invoke-WebRequest -Uri '%RARLAB_URL%' -UseBasicParsing;" ^
+    "    $html = $page.Content;" ^
     "" ^
-    "    $table = [regex]::Match(" ^
-    "        $html," ^
-    "        '(?is)Localized\s+WinRAR\s+x64\s+versions.*?</table>'" ^
-    "    );" ^
+    "    $rows = [regex]::Matches($html, '(?is)<tr[^>]*>(.*?)</tr>');" ^
     "" ^
-    "    if (-not $table.Success) {" ^
-    "        throw 'Could not locate the Localized WinRAR x64 versions table.';" ^
+    "    if ($rows.Count -eq 0) {" ^
+    "        throw 'No table rows were found on the RARLAB download page.';" ^
     "    }" ^
     "" ^
-    "    $rows = [regex]::Matches(" ^
-    "        $table.Value," ^
-    "        '(?is)<tr[^>]*>(.*?)</tr>'" ^
-    "    );" ^
-    "" ^
-    "    $seen = New-Object 'System.Collections.Generic.HashSet[string]';" ^
     "    $found = 0;" ^
     "" ^
     "    foreach ($row in $rows) {" ^
-    "        $cells = [regex]::Matches(" ^
-    "            $row.Groups[1].Value," ^
-    "            '(?is)<td[^>]*>(.*?)</td>'" ^
-    "        );" ^
+    "        $r = $row.Groups[1].Value;" ^
     "" ^
-    "        if ($cells.Count -lt 2) { continue; }" ^
+    "        $link = [regex]::Match($r, '(?is)<a[^>]+href\s*=\s*[""'''']?([^""'' >]*winrar-x64-[^""'' >]*\.exe)[""'''']?[^>]*>(.*?)</a>');" ^
     "" ^
-    "        $link = [regex]::Match(" ^
-    "            $cells[0].Groups[1].Value," ^
-    "            '(?is)<a[^>]+href\s*=\s*[""'' ]?([^""'' >]+)[""'' ]?[^>]*>(.*?)</a>'" ^
-    "        );" ^
-    "" ^
-    "        if (-not $link.Success) { continue; }" ^
-    "" ^
-    "        $language = [regex]::Replace(" ^
-    "            $link.Groups[2].Value," ^
-    "            '<[^>]+>'," ^
-    "            ''" ^
-    "        ).Trim();" ^
-    "" ^
-    "        $language = [System.Net.WebUtility]::HtmlDecode($language);" ^
+    "        if (-not $link.Success) { continue }" ^
     "" ^
     "        $href = $link.Groups[1].Value.Trim();" ^
+    "        $name = [regex]::Replace($link.Groups[2].Value, '<[^>]+>', '');" ^
+    "        $name = [System.Net.WebUtility]::HtmlDecode($name).Trim();" ^
+    "" ^
+    "        if ([string]::IsNullOrWhiteSpace($name)) { continue }" ^
     "" ^
     "        if ($href.StartsWith('/')) {" ^
-    "            $href = 'https://www.rarlab.com' + $href;" ^
+    "            $href = 'https://www.rarlab.com' + $href" ^
     "        } elseif ($href -notmatch '^https?://') {" ^
-    "            $href = 'https://www.rarlab.com/' + $href.TrimStart('/');" ^
+    "            $href = 'https://www.rarlab.com/' + $href.TrimStart('/')" ^
     "        }" ^
     "" ^
-    "        if ($href -notmatch 'winrar-x64-\d{3}\w*\.exe$') {" ^
-    "            continue;" ^
-    "        }" ^
-    "" ^
-    "        if ($seen.Add($href)) {" ^
-    "            Write-Output ($language + '|' + $href);" ^
-    "            $found++;" ^
-    "        }" ^
+    "        Write-Output ($name + '|' + $href);" ^
+    "        $found++;" ^
     "    }" ^
     "" ^
     "    if ($found -eq 0) {" ^
-    "        throw 'The localized WinRAR table was found, but no installer links could be extracted.';" ^
+    "        throw 'RARLAB was reached, but no live WinRAR x64 language links could be parsed.';" ^
     "    }" ^
     "" ^
+    "    exit 0;" ^
     "} catch {" ^
     "    Write-Error $_.Exception.Message;" ^
     "    exit 1;" ^
@@ -424,6 +407,9 @@ if errorlevel 1 (
     echo.
     echo ERROR: Unable to retrieve the live WinRAR language list.
     echo.
+    echo RARLAB may have changed its webpage structure,
+    echo or the computer may be unable to access the website.
+    echo.
     del "%langfile%" >nul 2>&1
     pause
     exit /b 1
@@ -432,14 +418,17 @@ if errorlevel 1 (
 if not exist "%langfile%" (
     echo.
     echo ERROR: Language list was not created.
-    echo.
     pause
     exit /b 1
 )
 
+:: ------------------------------------
+:: Read language list
+:: ------------------------------------
+
 echo.
-echo Available languages from RARLAB:
-echo ==================================
+echo Available WinRAR languages:
+echo =============================
 echo.
 
 setlocal EnableDelayedExpansion
@@ -450,78 +439,117 @@ for /f "usebackq tokens=1,* delims=|" %%A in ("%langfile%") do (
     set /a count+=1
     set "lang[!count!]=%%A"
     set "url[!count!]=%%B"
+
     echo [!count!] %%A
 )
 
 echo.
 
 if "!count!"=="0" (
-    echo ERROR: No languages were found.
+    echo ERROR: RARLAB returned no supported languages.
     echo.
-    del "%langfile%" >nul 2>&1
     endlocal
+    del "%langfile%" >nul 2>&1
     pause
     exit /b 1
 )
 
-:SELECT_LANGUAGE
+:: ------------------------------------
+:: Ask user for language
+:: ------------------------------------
 
-set "langchoice="
+:LANGUAGECHOICE
 
+echo.
 set /p "langchoice=Select a language [1-!count!]: "
 
 if not defined langchoice (
     echo.
     echo Please select a language.
-    echo.
-    goto :SELECT_LANGUAGE
+    goto :LANGUAGECHOICE
 )
 
-set /a "choiceNumber=langchoice" 2>nul
+:: Verify that selection is numeric
+for /f "delims=0123456789" %%A in ("!langchoice!") do (
+    if not "%%A"=="" (
+        echo.
+        echo Invalid selection.
+        goto :LANGUAGECHOICE
+    )
+)
 
-if !choiceNumber! LSS 1 goto :INVALID_LANGUAGE
-if !choiceNumber! GTR !count! goto :INVALID_LANGUAGE
+if !langchoice! LSS 1 (
+    echo.
+    echo Invalid selection.
+    goto :LANGUAGECHOICE
+)
 
-set "selectedlanguage=!lang[%choiceNumber%]!"
-set "download_link=!url[%choiceNumber%]!"
+if !langchoice! GTR !count! (
+    echo.
+    echo Invalid selection.
+    goto :LANGUAGECHOICE
+)
+
+set "selectedlanguage=!lang[%langchoice%]!"
+set "download_link=!url[%langchoice%]!"
 
 if not defined download_link (
     echo.
     echo ERROR: The selected language has no download URL.
     echo.
-    goto :SELECT_LANGUAGE
+    endlocal
+    del "%langfile%" >nul 2>&1
+    pause
+    exit /b 1
 )
+
+:: ------------------------------------
+:: Determine actual filename from URL
+:: ------------------------------------
+
+for %%F in ("!download_link!") do set "filename=%%~nxF"
 
 echo.
 echo =============================
 echo Selected language:
 echo !selectedlanguage!
 echo.
-echo Live download URL:
+echo Download URL:
 echo !download_link!
+echo.
+echo Filename:
+echo !filename!
 echo =============================
 echo.
 
-for %%F in ("!download_link!") do (
-    set "filename=%%~nxF"
-)
+:: ------------------------------------
+:: Download official RARLAB installer
+:: ------------------------------------
 
-echo Downloading:
-echo !filename!
+echo Downloading WinRAR...
 echo.
 
-curl -L --fail --ssl-no-revoke ^
+curl.exe -L --fail --silent --show-error ^
     -o "%savepath%\!filename!" ^
     "!download_link!"
 
 if errorlevel 1 (
     echo.
-    echo =============================
-    echo ERROR: Download failed.
-    echo =============================
+    echo ERROR: WinRAR download failed.
     echo.
-    echo URL:
-    echo !download_link!
+    del "%langfile%" >nul 2>&1
+    endlocal
+    pause
+    exit /b 1
+)
+
+:: ------------------------------------
+:: Verify download
+:: ------------------------------------
+
+if not exist "%savepath%\!filename!" (
+    echo.
+    echo ERROR: Download completed but installer was not found.
     echo.
     del "%langfile%" >nul 2>&1
     endlocal
@@ -530,29 +558,16 @@ if errorlevel 1 (
 )
 
 echo.
-echo =============================
-echo Download complete.
-echo =============================
-echo.
-echo Language:
-echo !selectedlanguage!
-echo.
-echo File:
+echo Download complete:
 echo "%savepath%\!filename!"
 echo.
+
+:: ------------------------------------
+:: Clean up
+:: ------------------------------------
 
 del "%langfile%" >nul 2>&1
 
 endlocal
 
 goto :CHECKINSTALLER
-
-
-:INVALID_LANGUAGE
-
-echo.
-echo Invalid selection.
-echo Please enter a number between 1 and !count!.
-echo.
-
-goto :SELECT_LANGUAGE
