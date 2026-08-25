@@ -220,33 +220,39 @@ EXIT /b
 :REGISTRATION
 ====================================
 ECHO.
-set /p input="What is the name to be registered? "
-IF NOT DEFINED input set input=ABCDEFG
+
+set /p "input=What is the name to be registered? "
+IF NOT DEFINED input set "input=ABCDEFG"
 
 ECHO.
 ECHO The name you just entered is: %input%
 ECHO.
-ECHO Creating rarreg.key..
+
+ECHO Checking paths...
+ECHO savepath=[%savepath%]
+ECHO temppath=[%temppath%]
+ECHO bit=[%bit%]
 ECHO.
 
-ECHO Checking:
+ECHO Checking savepath:
 ECHO "%savepath%\winrar-keygen-%bit%.exe"
-
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
-    ECHO File exists.
+    ECHO File found in savepath.
 ) ELSE (
-    ECHO ERROR: File does not exist.
-    ECHO Expected file:
-    ECHO "%savepath%\winrar-keygen-%bit%.exe"
-    EXIT /B 1
+    ECHO File NOT found in savepath.
 )
 
-"%savepath%\winrar-keygen-%bit%.exe" "%input%" "License" >> "%savepath%\rarreg.key"
-
-SETLOCAL EnableDelayedExpansion
-for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
-    set "DEL=%%a"
+ECHO.
+ECHO Checking temppath:
+ECHO "%temppath%\winrar-keygen-%bit%.exe"
+IF EXIST "%temppath%\winrar-keygen-%bit%.exe" (
+    ECHO File found in temppath.
+) ELSE (
+    ECHO File NOT found in temppath.
 )
+
+ECHO.
+PAUSE
 
 GOTO :Beginoffile
 EXIT /b
