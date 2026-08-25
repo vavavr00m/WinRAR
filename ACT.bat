@@ -193,11 +193,11 @@ EXIT /b
 :BUILDFROMSRC
 ====================================
 ECHO.
-ECHO This is just a placeholder for future improvement - silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly
-set /p /i "QUERYBUILD=Do you want to compile from source [y/n]? "
-IF [%QUERYBUILD%] EQU [] goto :BUILDFROMSRC
-IF [%QUERYBUILD%] EQU [y] call :COMPILE
-IF [%QUERYBUILD%] EQU [n] goto :REGISTRATION 
+ECHO "This is just a placeholder for future improvement. Silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly"
+set /p "QUERYBUILD=Do you want to compile from source [y/n]? "
+IF /i "%QUERYBUILD%"=="" goto :BUILDFROMSRC
+IF /i "%QUERYBUILD%"=="y" call :COMPILE
+IF /i "%QUERYBUILD%"=="n" goto :REGISTRATION 
 EXIT /b
 
 ====================================
