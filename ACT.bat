@@ -18,41 +18,41 @@
 
 @echo off
 CLS
-
-::::::::::::::::::::::::::::::::::::::::::::
-:: Elevate.cmd - Version 8
-:: Automatically check & get admin rights
-:: see "https://stackoverflow.com/a/12264592/1016343" for description
-::::::::::::::::::::::::::::::::::::::::::::
+ 
+@echo off
+REM :::::::::::::::::::::::::::::::::::::::::
+REM Elevate.cmd - Version 9
+REM Automatically check & get admin rights
+REM see "https://stackoverflow.com/a/12264592/1016343" for description
+REM :::::::::::::::::::::::::::::::::::::::::
  
  CLS
- ECHO.
+ ECHO/
  ECHO =============================
  ECHO Running Admin shell
  ECHO =============================
 
 :init
- setlocal DisableDelayedExpansion
+ setlocal EnableExtensions DisableDelayedExpansion
  set cmdInvoke=1
  set winSysFolder=System32
- set "batchPath=%~dpnx0"
+ set "batchPath=%~f0"
  rem this works also from cmd shell, other than %~0
  for %%k in (%0) do set batchName=%%~nk
  set "vbsGetPrivileges=%temp%\OEgetPriv_%batchName%.vbs"
  setlocal EnableDelayedExpansion
 
 :checkPrivileges
-  whoami /groups /nh | find "S-1-16-12288" > nul
-  if '%errorlevel%' == '0' ( goto checkPrivileges2 ) else ( goto getPrivileges )
-
+  %SystemRoot%\System32\whoami.exe /groups /nh | %SystemRoot%\System32\find.exe "S-1-16-12288" 1>nul
+  if errorlevel 1 goto getPrivileges
 
 :checkPrivileges2
-  net session 1>nul 2>NUL
-  if '%errorlevel%' == '0' ( goto gotPrivileges ) else ( goto getPrivileges )
+  %SystemRoot%\System32\net.exe session 1>nul 2>NUL
+  if not errorlevel 1 goto gotPrivileges
 
 :getPrivileges
   if '%1'=='ELEV' (echo ELEV & shift /1 & goto gotPrivileges)
-  ECHO.
+  ECHO/
   ECHO **************************************
   ECHO Invoking UAC for Privilege Escalation
   ECHO **************************************
@@ -77,12 +77,12 @@ CLS
  exit /B
 
 :gotPrivileges
- setlocal & cd /d %~dp0
+ setlocal & cd /d "%~dp0"
  if '%1'=='ELEV' (del "%vbsGetPrivileges%" 1>nul 2>nul  &  shift /1)
 
- ::::::::::::::::::::::::::::
- ::START
- ::::::::::::::::::::::::::::
+ REM :::::::::::::::::::::::::
+ REM START
+ REM :::::::::::::::::::::::::
 
 COLOR 1F
 
@@ -90,9 +90,9 @@ CLS
 
 IF EXIST "%PROGRAMFILES(X86)%" ( GOTO :64BIT ) ELSE ( GOTO :32BIT )
 
-:: ====================================
+REM ====================================
 :64BIT
-:: ====================================
+REM ====================================
 set bit=x64
 set notbit=x86
 ECHO.
@@ -100,9 +100,9 @@ ECHO This is a %bit% operating system
 set "winrarpath=%PROGRAMFILES%\WinRAR"
 goto :SETTEMPDIR
 
-:: ====================================
+REM ====================================
 :32BIT
-:: ====================================
+REM ====================================
 set bit=x86
 set notbit=x64
 ECHO.
@@ -143,16 +143,16 @@ if not exist "%temppath%" (
 goto :CHECKIFINSTALLED
 EXIT /b
 
-:: ====================================
+REM ====================================
 :CHECKIFINSTALLED
-:: ====================================
+REM ====================================
 ECHO.
 IF EXIST "%winrarpath%\winrar.exe" ( ECHO WinRAR is installed. && goto :PREREGISTRATION ) ELSE ( ECHO WinRAR undetected. && goto :DOWNLOADER )
 EXIT /b
 
-:: ====================================
+REM ====================================
 :CHECKINSTALLER
-:: ====================================
+REM ====================================
 ECHO.
 ECHO Checking installer..
 ECHO.
@@ -160,34 +160,52 @@ IF EXIST "%savepath%\winrar-%bit%-*.exe" ( ECHO Successfully downloaded. && goto
 pause>nul
 EXIT /b
 
-:: ====================================
+REM ====================================
 :CHECKINSTALLERFILEPATH
-:: ====================================
+REM ====================================
 ECHO.
 FOR %%f IN ( "%savepath%\winrar-%bit%-*.exe" ) do set "installerpath=%%f"
 IF EXIST "%installerpath%" ( ECHO "%installerpath%" exists && goto :STARTINSTALL ) ELSE ( ECHO Unable to locate WinRAR installer. && goto :ASKINSTALLERFILEPATH )
 pause>nul
 EXIT /b
 
-:: ====================================
+REM ====================================
 :ASKINSTALLERFILEPATH
-:: ====================================
+REM ====================================
 ECHO.
 set /p "installerpath=What is the full path to the installer? "
 IF [%installerpath%] EQU [] ( goto :ASKINSTALLERFILEPATH ) ELSE ( goto :STARTINSTALL )
 EXIT /b
 
-:: ====================================
+REM ====================================
 :STARTINSTALL
-:: ====================================
+REM ====================================
 ECHO.
 ECHO Installing..
 start "" /wait "%installerpath%" /S && goto :CHECKIFINSTALLED
 EXIT /b
 
-:: ====================================
+REM ====================================
 :PREREGISTRATION
-:: ====================================
+REM ====================================
+
+ECHO.
+set /p "QUERYPREREG=How do you want to obtain the medicine? "
+ECHO [a] Auto-download from source repository
+ECHO [b] Manually download from source repository (WARNING: Not recommended if you don't know where to get it from)
+ECHO [c] Build from source (WARNING: This is the recommended method but it might take up a lot of space)
+PAUSE
+IF /i "%QUERYPREREG%"=="" ECHO Incorrect entry && goto :PREREGISTRATION
+IF /i "%QUERYPREREG%"=="a" goto :AUTODLFROMSRC
+IF /i "%QUERYPREREG%"=="b" goto :MANUALDL
+IF /i "%QUERYPREREG%"=="c" goto :AUTOBUILDFROMSRC
+
+EXIT /b
+
+REM ====================================
+:AUTODLFROMSRC
+REM ====================================
+
 ECHO.
 ECHO Downloading medicine..
 SET "URL=https://github.com/bitcookies/winrar-keygen"
@@ -204,24 +222,31 @@ for %%F in ("%download_link%") do set "filename=%%~nxF"
 curl -kL -o "%savepath%\%filename%" "%download_link%"
 
 ECHO.
-IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%savepath%\winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :BUILDFROMSRC )
+IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%savepath%\winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :PREREGISTRATION )
 
 EXIT /b
 
-:: ====================================
-:BUILDFROMSRC
-:: ====================================
+REM ====================================
+:MANUALDL
+REM ====================================
 ECHO.
-ECHO "This is just a placeholder for future improvement. Silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly"
-set /p "QUERYBUILD=Do you want to compile from source [y/n]? "
-IF /i "%QUERYBUILD%"=="" goto :BUILDFROMSRC
-IF /i "%QUERYBUILD%"=="y" call :COMPILE
-IF /i "%QUERYBUILD%"=="n" goto :REGISTRATION 
+ECHO The script expects a file called winrar-keygen-%bit%.exe in "%temppath%". Ensure existence of the medicine in the specified folder before proceeding...
+PAUSE
+IF EXIST "%temppath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :PREREGISTRATION )
 EXIT /b
 
-:: ====================================
+REM ====================================
+:AUTOBUILDFROMSRC
+REM ====================================
+ECHO.
+ECHO This is just a placeholder for future improvement. Silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly
+
+IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%savepath%\winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :PREREGISTRATION )
+EXIT /b
+
+REM ====================================
 :REGISTRATION
-:: ====================================
+REM ====================================
 ECHO.
 
 set /p "input=What is the name to be registered? "
@@ -283,9 +308,9 @@ IF EXIST "%kgroot%\rarreg.key" (
 GOTO :Beginoffile
 EXIT /b
 
-:: ====================================
+REM ====================================
 :Beginoffile
-:: ====================================
+REM ====================================
 COLOR 1F
 
 xcopy /s /x /y "%kgroot%\rarreg.key" "%winrarpath%\"
@@ -296,9 +321,9 @@ start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%"
 GOTO :leftovers
 EXIT /b
 
-:: ====================================
+REM ====================================
 :leftovers
-:: ====================================
+REM ====================================
 ECHO.
 echo Deleting leftovers..
 REM adding double quotes fail deletion if files are in desktop -- need investigation
@@ -307,18 +332,18 @@ IF EXIST "%temppath%" ( ECHO Temp folder exists. Deleting.. && RMDIR /S /Q "%tem
 goto :final
 EXIT /b
 
-:: ====================================
+REM ====================================
 :final
-:: ====================================
+REM ====================================
 ECHO.
 ECHO In WinRAR window, choose HELP, select ABOUT WinRAR and check active status. If unsuccessful, please try again or report to https://github.com/vavavr00m/WinRAR.
 ECHO.
 PAUSE>nul
 EXIT /b
 
-:: ====================================
+REM ====================================
 :DOWNLOADER
-:: ====================================
+REM ====================================
 @echo off
 
 echo.
