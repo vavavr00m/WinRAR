@@ -120,7 +120,7 @@ cd /d "%USERPROFILE%\Downloads\"
 
 set /p "temppath=Where do you want to save temporary files? "
 
-if "%temppath%"=="" set "temppath=%~dp0WRA\"
+if "%temppath%"=="" set "temppath=%~dp0WRA"
 
 echo Temp path: "%temppath%"
 
