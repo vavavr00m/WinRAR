@@ -351,18 +351,18 @@ set "langfile=%temp%\winrar_languages_%RANDOM%.txt"
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference='Stop';" ^
     "$html=(Invoke-WebRequest -UseBasicParsing '%url%').Content;" ^
-    "$section=[regex]::Match($html,'(?is)Localized WinRAR x64 versions.*');" ^
-    "if (!$section.Success) { throw 'Localized WinRAR x64 section not found.' };" ^
-    "$rows=[regex]::Matches($section.Value,'(?is)<tr[^>]*>(.*?)</tr>');" ^
-    "foreach($row in $rows) {" ^
-    "  $a=[regex]::Match($row.Groups[1].Value,'(?is)<a[^>]+href\s*=\s*[""'' ]?([^""'' >]+)[""'' ]?[^>]*>(.*?)</a>');" ^
-    "  if($a.Success -and $a.Groups[1].Value -match 'winrar-x64-[^/]+\.exe$') {" ^
-    "    $lang=[regex]::Replace($a.Groups[2].Value,'<[^>]+>','').Trim();" ^
-    "    $href=$a.Groups[1].Value.Trim();" ^
-    "    if($href.StartsWith('/')) { $href='https://www.rarlab.com'+$href };" ^
-    "    elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') };" ^
-    "    Write-Output ($lang+'|'+$href);" ^
-    "  }" ^
+    "$section=[regex]::Match($html,'(?is)Localized WinRAR x64 versions.*?(?=<h2|<h3|</body>)');" ^
+    "if (!$section.Success) { throw 'Could not locate localized WinRAR section.' };" ^
+    "$links=[regex]::Matches($section.Value,'(?is)href\s*=\s*[""'' ]?([^""'' >]*winrar-x64-[^""'' >]*\.exe)');" ^
+    "$names=@('Arabic','Armenian','Azerbaijani','Bulgarian','Catalan','Chinese Simplified','Chinese Traditional','Croatian','Czech','Danish','Dutch','English','Euskera','Finnish','French','Galician','German','Greek','Hungarian','Indonesian','Italian','Japanese','Korean','Lithuanian','Mongolian','Polish','Portuguese','Portuguese Brazilian','Romanian','Russian','Serbian Cyrillic','Slovak','Slovenian','Spanish','Swedish','Thai','Turkish','Ukrainian','Vietnamese');" ^
+    "$i=0;" ^
+    "foreach($link in $links) {" ^
+    "  if($i -ge $names.Count) { break };" ^
+    "  $href=$link.Groups[1].Value;" ^
+    "  if($href.StartsWith('/')) { $href='https://www.rarlab.com'+$href };" ^
+    "  elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') };" ^
+    "  Write-Output ($names[$i]+'|'+$href);" ^
+    "  $i++;" ^
     "}" > "%langfile%"
 
 if errorlevel 1 (
