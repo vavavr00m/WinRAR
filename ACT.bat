@@ -353,7 +353,7 @@ set "url=http://www.rarlab.com/download.htm"
 
 cscript /nologo /e:jscript "%~f0" "%url%" "%savepath%"
 
-goto :EOF
+goto :CHECKINSTALLER
 
 :: JScript portion */
 
