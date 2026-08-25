@@ -222,11 +222,25 @@ EXIT /b
 ECHO.
 set /p input="What is the name to be registered? "
 IF NOT DEFINED input set input=ABCDEFG
+
 ECHO.
 ECHO The name you just entered is: %input%
 ECHO.
 ECHO Creating rarreg.key..
 ECHO.
+
+ECHO Checking:
+ECHO "%savepath%\winrar-keygen-%bit%.exe"
+
+IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
+    ECHO File exists.
+) ELSE (
+    ECHO ERROR: File does not exist.
+    ECHO Expected file:
+    ECHO "%savepath%\winrar-keygen-%bit%.exe"
+    EXIT /B 1
+)
+
 "%savepath%\winrar-keygen-%bit%.exe" "%input%" "License" >> "%savepath%\rarreg.key"
 
 SETLOCAL EnableDelayedExpansion
