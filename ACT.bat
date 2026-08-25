@@ -241,10 +241,12 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in savepath:
     ECHO "%savepath%\winrar-keygen-%bit%.exe"
     set "keygenpath=%savepath%\winrar-keygen-%bit%.exe"
+    set "keygenroot=%~dpkeygenpath"
 ) ELSE IF EXIST "%temppath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in temppath:
     ECHO "%temppath%\winrar-keygen-%bit%.exe"
     set "keygenpath=%temppath%\winrar-keygen-%bit%.exe"
+    set "keygenroot=%~dpkeygenpath"
 ) ELSE (
     ECHO ERROR: Could not find the executable.
     ECHO.
@@ -258,7 +260,7 @@ ECHO.
 ECHO Selected path:
 ECHO "%keygenpath%"
 
-"%keygenpath%\winrar-keygen-%bit%.exe" "%input%" "License" >> "%keygenpath%\rarreg.key"
+"%keygenpath%" "%input%" "License" >> "%keygenroot%\rarreg.key"
 
 SETLOCAL EnableDelayedExpansion
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
