@@ -278,8 +278,6 @@ EXIT /b
 ====================================
 @echo off
 ECHO.
-setlocal
-ECHO.
 set "url=https://www.rarlab.com/download.htm"
 set /p "savepath=Where do you want to download the latest WinRAR installer (Default: %temppath%)? "
 
