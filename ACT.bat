@@ -287,7 +287,7 @@ EXIT /b
 COLOR 1F
 
 REM Adding double quote before the variable mypath in the line set will fail the registration
-SET "mypath=%temppath%\rarreg.key"
+SET "mypath=%keygenroot%\rarreg.key"
 
 xcopy /s /x /y "%mypath:~0,-1%" "%winrarpath%\"
 
