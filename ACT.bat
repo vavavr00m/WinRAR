@@ -227,7 +227,7 @@ ECHO The name you just entered is: %input%
 ECHO.
 ECHO Creating rarreg.key..
 ECHO.
-"%temppath%\winrar-keygen-%bit%.exe" "%input%" "License" >> "%temppath%\rarreg.key"
+"%savepath%\winrar-keygen-%bit%.exe" "%input%" "License" >> "%savepath%\rarreg.key"
 
 SETLOCAL EnableDelayedExpansion
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
