@@ -13,7 +13,7 @@
 ::@ModByPiash - Repo readme.md format - https://github.com/lstprjct/IDM-Activation-Script
 ::@dbenham - Make a batch delete itself - https://stackoverflow.com/a/20333575/21996598
 ::@Tux 528 - GH download specific release - https://nsaneforums.com/profile/105674-tux-528/
-::@rojo - Download & install latest WinRAR from batch - https://stackoverflow.com/a/15777517/21996598
+::@rojo - Download & install latest WinRAR from batch - https://stackoverflow.com/a/15777517/21996598 | modified using ChatGPT
 ::@vavavr00m (me) - https://github.com/vavavr00m/WinRAR - EN translation & some fixes (added a Batch download method and another PowerShell option that works with my system, delete leftovers script, change absolute paths to relative and/or variable, merge the external batch script)
 
 @echo off
@@ -355,76 +355,33 @@ cscript /nologo /e:jscript "%~f0" "%url%" "%savepath%"
 
 goto :CHECKINSTALLER
 
-:: JScript portion */
+// JScript portion */
 
-// populate translation from locale identifier hex value to WinRAR language label
-// http://msdn.microsoft.com/en-us/library/dd318693.aspx
-var abbrev={}, a=function(arr,val){for(var i=0;i<arr.length;i++)abbrev[arr[i]]=val};
-a(['1401','3c01','0c01','0801','2001','4001','2801','1c01','3801','2401'],'Arabic');
-a(['042b'],'Armenian');
-a(['082c','042c'],'Azerbaijani');
-a(['0423'],'Belarusian');
-a(['0402'],'Bulgarian');
-a(['0403'],'Catalan');
-a(['7c04'],'Chinese Traditional');
-a(['0c04','1404','1004','0004'],'Chinese Simplified');
-a(['101a'],'Croatian');
-a(['0405'],'Czech');
-a(['0406'],'Danish');
-a(['0813','0413'],'Dutch');
-a(['0425'],'Estonian');
-a(['040b'],'Finnish');
-a(['080c','0c0c','040c','140c','180c','100c'],'French');
-a(['0437'],'Georgian');
-a(['0c07','0407','1407','1007','0807'],'German');
-a(['0408'],'Greek');
-a(['040d'],'Hebrew');
-a(['040e'],'Hungarian');
-a(['0421'],'Indonesian');
-a(['0410','0810'],'Italian');
-a(['0411'],'Japanese');
-a(['0412'],'Korean');
-a(['0427'],'Lithuanian');
-a(['042f'],'Macedonian');
-a(['0414','0814'],'Norwegian');
-a(['0429'],'Persian');
-a(['0415'],'Polish');
-a(['0816'],'Portuguese');
-a(['0416'],'Portuguese Brazilian');
-a(['0418'],'Romanian');
-a(['0419'],'Russian');
-a(['7c1a','1c1a','0c1a'],'Serbian Cyrillic');
-a(['181a','081a'],'Serbian Latin');
-a(['041b'],'Slovak');
-a(['0424'],'Slovenian');
-a(['2c0a','400a','340a','240a','140a','1c0a','300a','440a','100a','480a','080a','4c0a','180a','3c0a','280a','500a','0c0a','040a','540a','380a','200a'],'Spanish');
-a(['081d','041d'],'Swedish');
-a(['041e'],'Thai');
-a(['041f'],'Turkish');
-a(['0422'],'Ukranian');
-a(['0843','0443'],'Uzbek');
-a(['0803'],'Valencian');
-a(['042a'],'Vietnamese');
-
-function language() {
-    var os = GetObject('winmgmts:').ExecQuery('select Locale from Win32_OperatingSystem');
-    var locale = new Enumerator(os).item().Locale;
-
-    // default to English if locale is not in abbrev{}
-    return abbrev[locale.toLowerCase()] || 'English';
-}
+// ------------------------------------------------------------
+// HTTP GET
+// ------------------------------------------------------------
 
 function fetch(url) {
     var xObj = new ActiveXObject("Microsoft.XMLHTTP");
-    xObj.open("GET",url,true);
-    xObj.setRequestHeader('User-Agent','XMLHTTP/1.0');
-    xObj.send('');
-    while (xObj.readyState != 4) WSH.Sleep(50);
-    return(xObj);
+
+    xObj.open("GET", url, true);
+    xObj.setRequestHeader("User-Agent", "XMLHTTP/1.0");
+    xObj.send("");
+
+    while (xObj.readyState != 4)
+        WSH.Sleep(50);
+
+    return xObj;
 }
+
+
+// ------------------------------------------------------------
+// Save binary response
+// ------------------------------------------------------------
 
 function save(xObj, file) {
     var stream = new ActiveXObject("ADODB.Stream");
+
     with (stream) {
         type = 1; // binary
         open();
@@ -434,33 +391,448 @@ function save(xObj, file) {
     }
 }
 
-// fetch the initial web page
-var x = fetch(WSH.Arguments(0));
 
-// make HTML response all one line
-var html = x.responseText.split(/\r?\n/).join('');
+// ------------------------------------------------------------
+// HTML entity decoding
+// ------------------------------------------------------------
 
-// get OS architecture (This method is much faster than the Win32_Processor.AddressWidth method)
-var os = GetObject('winmgmts:').ExecQuery('select OSArchitecture from Win32_OperatingSystem');
-var arch = /\d+/.exec(new Enumerator(os).item().OSArchitecture) * 1;
+function htmlDecode(s) {
 
-// get link matching *.exe where the link text contains system language and architecture
-var r = new RegExp('<a\\s*href="[^"]+\\.exe(?=[^\\/]+' + language() + '[^<]+' + arch + '\\Wbit)');
-var link = r.exec(html)
+    return s
+        .replace(/&amp;/gi, "&")
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">");
+}
 
-// use only the stuff after the quotation mark to the end
-var dl = '' + /[^"]+$/.exec(link);
 
-// if the location is a relative path, prepend the domain
-if (dl.substring(0,1) == '/') dl = /.+:\/\/[^\/]+/.exec(WSH.Arguments(0)) + dl;
+// ------------------------------------------------------------
+// Remove HTML tags and normalize whitespace
+// ------------------------------------------------------------
 
-// target is path\filename
-var target=WSH.Arguments(1) + '\\' + /[^\/]+$/.exec(dl)
+function stripTags(s) {
 
-// echo without a new line
-WSH.StdOut.Write('Saving ' + target + '... ');
+    return htmlDecode(
+        s.replace(/<[^>]+>/g, " ")
+    )
+    .replace(/\s+/g, " ")
+    .replace(/^\s+|\s+$/g, "");
+}
 
-// fetch file and save it
-save(fetch(dl), target);
 
-WSH.Echo('Done.');
+// ------------------------------------------------------------
+// Fetch RARLAB download page
+// ------------------------------------------------------------
+
+var pageUrl = WSH.Arguments(0);
+var savepath = WSH.Arguments(1);
+
+var x = fetch(pageUrl);
+
+if (x.status < 200 || x.status >= 300) {
+
+    WSH.Echo(
+        "HTTP error " +
+        x.status +
+        " while fetching " +
+        pageUrl
+    );
+
+    WSH.Quit(1);
+}
+
+var html = x.responseText;
+
+
+// ------------------------------------------------------------
+// Determine OS architecture
+// ------------------------------------------------------------
+
+var os = GetObject("winmgmts:").ExecQuery(
+    "select OSArchitecture from Win32_OperatingSystem"
+);
+
+var osArch =
+    new Enumerator(os).item().OSArchitecture;
+
+var arch = /\d+/.exec(osArch) * 1;
+
+
+// ------------------------------------------------------------
+// Parse the RARLAB download table
+// ------------------------------------------------------------
+//
+// We don't maintain a language list.
+//
+// RARLAB's page is the source of truth:
+//
+//     language name -> executable href
+//
+// Only WinRAR x64 EXE links are considered.
+//
+
+var languages = [];
+
+var rows = html.match(
+    /<tr\b[^>]*>[\s\S]*?<\/tr>/gi
+);
+
+if (!rows) {
+
+    WSH.Echo(
+        "Could not find download table on RARLAB."
+    );
+
+    WSH.Quit(1);
+}
+
+
+for (var i = 0; i < rows.length; i++) {
+
+    var row = rows[i];
+
+    // We only want rows containing an executable.
+    if (!/\.exe["']/i.test(row))
+        continue;
+
+
+    // --------------------------------------------------------
+    // Find executable links in this row.
+    // --------------------------------------------------------
+
+    var linkMatches =
+        row.match(
+            /href\s*=\s*["'][^"']+\.exe["']/gi
+        );
+
+    if (!linkMatches)
+        continue;
+
+
+    for (var j = 0; j < linkMatches.length; j++) {
+
+        var hrefMatch =
+            /href\s*=\s*["']([^"']+\.exe)["']/i.exec(
+                linkMatches[j]
+            );
+
+        if (!hrefMatch)
+            continue;
+
+
+        var href = hrefMatch[1];
+
+
+        // Only WinRAR links.
+        if (!/winrar/i.test(href))
+            continue;
+
+
+        // ----------------------------------------------------
+        // Only select the x64 installer.
+        // ----------------------------------------------------
+
+        if (arch == 64) {
+
+            if (!/winrar-x64-[^\/]+\.exe$/i.test(href))
+                continue;
+
+        } else {
+
+            // If the system is 32-bit, look for x86/x32.
+            if (
+                !/winrar-(x86|x32)-[^\/]+\.exe$/i.test(href)
+            )
+                continue;
+        }
+
+
+        // ----------------------------------------------------
+        // Extract the language from the anchor containing
+        // this executable.
+        // ----------------------------------------------------
+
+        var escapedHref =
+            href.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                "\\$&"
+            );
+
+
+        var anchorRegex = new RegExp(
+            "<a\\b[^>]*href\\s*=\\s*[\"']" +
+            escapedHref +
+            "[\"'][^>]*>([\\s\\S]*?)<\\/a>",
+            "i"
+        );
+
+
+        var anchorMatch =
+            anchorRegex.exec(row);
+
+
+        if (!anchorMatch)
+            continue;
+
+
+        var name =
+			stripTags(anchorMatch[1]);
+
+
+		// Skip the generic WinRAR x64/x86 download entry.
+		// We only want localized versions.
+		if (/^WinRAR\b/i.test(name))
+			continue;
+
+
+		if (name == "")
+			continue;
+
+
+        // Avoid duplicate language entries.
+        var duplicate = false;
+
+        for (var k = 0; k < languages.length; k++) {
+
+            if (
+                languages[k].name.toLowerCase() ==
+                name.toLowerCase()
+            ) {
+                duplicate = true;
+                break;
+            }
+        }
+
+        if (duplicate)
+            continue;
+
+
+        languages.push({
+            name: name,
+            href: href
+        });
+    }
+}
+
+
+// ------------------------------------------------------------
+// Verify that we found languages.
+// ------------------------------------------------------------
+
+if (languages.length == 0) {
+
+    WSH.Echo(
+        "Could not find any localized WinRAR " +
+        arch +
+        "-bit installers."
+    );
+
+    WSH.Quit(1);
+}
+
+
+// ------------------------------------------------------------
+// Sort alphabetically
+// ------------------------------------------------------------
+
+languages.sort(function(a, b) {
+
+    var aa = a.name.toLowerCase();
+    var bb = b.name.toLowerCase();
+
+    if (aa < bb)
+        return -1;
+
+    if (aa > bb)
+        return 1;
+
+    return 0;
+});
+
+
+// ------------------------------------------------------------
+// Display language selection
+// ------------------------------------------------------------
+
+WSH.StdOut.Write("\r\n");
+
+WSH.StdOut.Write(
+    "Available WinRAR " +
+    arch +
+    "-bit languages:\r\n"
+);
+
+WSH.StdOut.Write(
+    "----------------------------------------\r\n"
+);
+
+
+for (var i = 0; i < languages.length; i++) {
+
+    WSH.StdOut.Write(
+        (i + 1) +
+        ". " +
+        languages[i].name +
+        "\r\n"
+    );
+}
+
+
+WSH.StdOut.Write("\r\n");
+
+WSH.StdOut.Write(
+    "Select language [1-" +
+    languages.length +
+    "]: "
+);
+
+
+// ------------------------------------------------------------
+// Read user selection
+// ------------------------------------------------------------
+
+var input =
+    WSH.StdIn.ReadLine();
+
+var selected =
+    parseInt(input, 10) - 1;
+
+
+if (
+    isNaN(selected) ||
+    selected < 0 ||
+    selected >= languages.length
+) {
+
+    WSH.Echo("");
+    WSH.Echo("Invalid language selection.");
+
+    WSH.Quit(1);
+}
+
+
+// ------------------------------------------------------------
+// Get selected download
+// ------------------------------------------------------------
+
+var selectedLanguage =
+    languages[selected].name;
+
+var dl =
+    languages[selected].href;
+
+
+// ------------------------------------------------------------
+// Convert relative URL to absolute URL
+// ------------------------------------------------------------
+
+if (!/^https?:\/\//i.test(dl)) {
+
+    var domain =
+        /^https?:\/\/[^\/]+/i.exec(pageUrl);
+
+    if (!domain) {
+
+        WSH.Echo(
+            "Could not determine domain from " +
+            pageUrl
+        );
+
+        WSH.Quit(1);
+    }
+
+
+    if (dl.charAt(0) != "/")
+        dl = "/" + dl;
+
+
+    dl =
+        domain[0] + dl;
+}
+
+
+// ------------------------------------------------------------
+// Determine target filename
+// ------------------------------------------------------------
+
+var filenameMatch =
+    /[^\/]+$/.exec(dl);
+
+if (!filenameMatch) {
+
+    WSH.Echo(
+        "Could not determine filename from " +
+        dl
+    );
+
+    WSH.Quit(1);
+}
+
+
+var filename =
+    filenameMatch[0];
+
+var target =
+    savepath + "\\" + filename;
+
+
+// ------------------------------------------------------------
+// Display selection
+// ------------------------------------------------------------
+
+WSH.StdOut.Write("\r\n");
+
+WSH.StdOut.Write(
+    "Selected language: " +
+    selectedLanguage +
+    "\r\n"
+);
+
+WSH.StdOut.Write(
+    "Architecture: " +
+    arch +
+    "-bit\r\n"
+);
+
+WSH.StdOut.Write(
+    "Download: " +
+    dl +
+    "\r\n"
+);
+
+WSH.StdOut.Write(
+    "Saving " +
+    target +
+    "... "
+);
+
+
+// ------------------------------------------------------------
+// Download installer
+// ------------------------------------------------------------
+
+var installer =
+    fetch(dl);
+
+
+if (
+    installer.status < 200 ||
+    installer.status >= 300
+) {
+
+    WSH.Echo("");
+
+    WSH.Echo(
+        "HTTP error " +
+        installer.status +
+        " while downloading installer."
+    );
+
+    WSH.Quit(1);
+}
+
+
+save(installer, target);
+
+WSH.Echo("Done.");
