@@ -269,7 +269,6 @@ SETLOCAL EnableDelayedExpansion
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
     set "DEL=%%a"
 )
-ENDLOCAL
 
 ECHO.
 IF EXIST "%kgroot%\rarreg.key" (
@@ -338,7 +337,7 @@ echo.
 
 if not exist "%savepath%" (
     mkdir "%savepath%" 2>nul
-
+    echo The folder "%savepath%" was created.
     if errorlevel 1 (
         echo ERROR: Unable to create "%savepath%"
         pause
