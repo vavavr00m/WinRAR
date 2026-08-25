@@ -256,7 +256,6 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
 )
 
 for %%A in ("%kgpath%") do set "kgroot=%%~dpA"
-set "kgroot=%kgroot:~0,-1%"
 
 ECHO.
 ECHO KG root: "%kgroot%"
@@ -286,6 +285,8 @@ EXIT /b
 :Beginoffile
 ====================================
 COLOR 1F
+
+set "kgroot=%kgroot:~0,-1%"
 
 xcopy /s /x /y "%keygenroot%\rarreg.key" "%winrarpath%\"
 
