@@ -747,6 +747,33 @@ var selectedLanguage =
 var dl =
     languages[selected].href;
 
+// ------------------------------------------------------------
+// Extract locale from selected download filename
+// ------------------------------------------------------------
+
+var filenameMatch =
+    /[^\/]+$/.exec(dl);
+
+if (!filenameMatch) {
+
+    WSH.Echo(
+        "Could not determine filename from " +
+        dl
+    );
+
+    WSH.Quit(1);
+}
+
+var filename =
+    filenameMatch[0];
+
+var localeMatch =
+    /^winrar-(?:x64|x86|x32)-\d+([^.\/]*)\.exe$/i.exec(
+        filename
+    );
+
+var locale =
+    localeMatch ? localeMatch[1].toLowerCase() : "";
 
 // ------------------------------------------------------------
 // Convert relative URL to absolute URL
@@ -781,26 +808,8 @@ if (!/^https?:\/\//i.test(dl)) {
 // Determine target filename
 // ------------------------------------------------------------
 
-var filenameMatch =
-    /[^\/]+$/.exec(dl);
-
-if (!filenameMatch) {
-
-    WSH.Echo(
-        "Could not determine filename from " +
-        dl
-    );
-
-    WSH.Quit(1);
-}
-
-
-var filename =
-    filenameMatch[0];
-
 var target =
     savepath + "\\" + filename;
-
 
 // ------------------------------------------------------------
 // Display selection
