@@ -119,7 +119,7 @@ ECHO.
 cd /d "%USERPROFILE%\Downloads\"
 
 set /p "temppath=Where do you want to save temporary files? "
-IF "%temppath%"=="" SET "temppath=%~dp0\WRA\"
+IF "%temppath%"=="" SET "temppath=%~dp0WRA\"
 ECHO %temppath%
 PAUSE
 IF NOT EXIST "%temppath%" MKDIR "%temppath%" && ECHO Temp folder created.
