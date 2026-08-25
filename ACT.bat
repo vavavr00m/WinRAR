@@ -122,6 +122,9 @@ set /p "temppath=Where do you want to save temporary files? "
 
 if "%temppath%"=="" set "temppath=%~dp0WRA"
 
+rem Remove trailing backslash, except for drive roots such as C:\
+if not "%temppath:~1,2%"==":\" if "%temppath:~-1%"=="\" set "temppath=%temppath:~0,-1%"
+
 echo Temp path: "%temppath%"
 
 if not exist "%temppath%" (
