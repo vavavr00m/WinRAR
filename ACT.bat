@@ -241,11 +241,11 @@ PAUSE
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in savepath:
     ECHO "%savepath%\winrar-keygen-%bit%.exe"
-    set "keygenpath=%savepath%\winrar-keygen-%bit%.exe"
+    set "kgpath=%savepath%\winrar-keygen-%bit%.exe"
 ) ELSE IF EXIST "%temppath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in temppath:
     ECHO "%temppath%\winrar-keygen-%bit%.exe"
-    set "keygenpath=%temppath%\winrar-keygen-%bit%.exe"
+    set "kgpath=%temppath%\winrar-keygen-%bit%.exe"
 ) ELSE (
     ECHO ERROR: Could not find the executable.
     ECHO.
@@ -255,15 +255,15 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     EXIT /B 1
 )
 
-for %%A in ("%keygenpath%") do set "keygenroot=%%~dpA"
+for %%A in ("%kgpath%") do set "kgroot=%%~dpA"
 
 ECHO.
-ECHO KG root: "%keygenroot%"
-ECHO KG path: "%keygenpath%"
+ECHO KG root: "%kgroot%"
+ECHO KG path: "%kgpath%"
 PAUSE
 ECHO.
 ECHO Creating rarreg.key...
-"%keygenpath%" "%input%" "License" >> "%keygenroot%\rarreg.key"
+"%kgpath%" "%input%" "License" >> "%kgroot%\rarreg.key"
 
 SETLOCAL EnableDelayedExpansion
 for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1) do rem"') do (
@@ -287,7 +287,7 @@ EXIT /b
 COLOR 1F
 
 REM Adding double quote before the variable mypath in the line set will fail the registration
-SET "mypath=%keygenroot%\rarreg.key"
+SET mypath=%keygenroot%\rarreg.key"
 
 xcopy /s /x /y "%mypath:~0,-1%" "%winrarpath%\"
 
