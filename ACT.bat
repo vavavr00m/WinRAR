@@ -1,3 +1,5 @@
+@if (@a==@b) @end /*
+
 :: batch script portion
 
 ::CREDITS
@@ -325,8 +327,6 @@ echo WinRAR Downloader
 echo =============================
 echo.
 
-set "RARLAB_URL=https://www.rarlab.com/download.htm"
-
 set /p "savepath=Where do you want to download WinRAR? (Default: %temppath%) "
 
 if "%savepath%"=="" set "savepath=%temppath%"
@@ -346,228 +346,121 @@ if not exist "%savepath%" (
     )
 )
 
-:: ------------------------------------
-:: Create temporary language list
-:: ------------------------------------
+@echo off
+setlocal
 
-set "langfile=%temp%\winrar_languages_%RANDOM%_%RANDOM%.txt"
+set "url=http://www.rarlab.com/download.htm"
 
-echo Contacting RARLAB...
-echo.
-echo Retrieving live WinRAR language list...
+cscript /nologo /e:jscript "%~f0" "%url%" "%savepath%"
 
-powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-    "$ErrorActionPreference='Stop';" ^
-    "try {" ^
-    "    $page = Invoke-WebRequest -Uri '%RARLAB_URL%' -UseBasicParsing;" ^
-    "    $html = $page.Content;" ^
-    "" ^
-    "    $rows = [regex]::Matches($html, '(?is)<tr[^>]*>(.*?)</tr>');" ^
-    "" ^
-    "    if ($rows.Count -eq 0) {" ^
-    "        throw 'No table rows were found on the RARLAB download page.';" ^
-    "    }" ^
-    "" ^
-    "    $found = 0;" ^
-    "" ^
-    "    foreach ($row in $rows) {" ^
-    "        $r = $row.Groups[1].Value;" ^
-    "" ^
-    "        $link = [regex]::Match($r, '(?is)<a[^>]+href\s*=\s*[""'''']?([^""'' >]*winrar-x64-[^""'' >]*\.exe)[""'''']?[^>]*>(.*?)</a>');" ^
-    "" ^
-    "        if (-not $link.Success) { continue }" ^
-    "" ^
-    "        $href = $link.Groups[1].Value.Trim();" ^
-    "        $name = [regex]::Replace($link.Groups[2].Value, '<[^>]+>', '');" ^
-    "        $name = [System.Net.WebUtility]::HtmlDecode($name).Trim();" ^
-    "" ^
-    "        if ([string]::IsNullOrWhiteSpace($name)) { continue }" ^
-    "" ^
-    "        if ($href.StartsWith('/')) {" ^
-    "            $href = 'https://www.rarlab.com' + $href" ^
-    "        } elseif ($href -notmatch '^https?://') {" ^
-    "            $href = 'https://www.rarlab.com/' + $href.TrimStart('/')" ^
-    "        }" ^
-    "" ^
-    "        Write-Output ($name + '|' + $href);" ^
-    "        $found++;" ^
-    "    }" ^
-    "" ^
-    "    if ($found -eq 0) {" ^
-    "        throw 'RARLAB was reached, but no live WinRAR x64 language links could be parsed.';" ^
-    "    }" ^
-    "" ^
-    "    exit 0;" ^
-    "} catch {" ^
-    "    Write-Error $_.Exception.Message;" ^
-    "    exit 1;" ^
-    "}" > "%langfile%"
+goto :EOF
 
-if errorlevel 1 (
-    echo.
-    echo ERROR: Unable to retrieve the live WinRAR language list.
-    echo.
-    echo RARLAB may have changed its webpage structure,
-    echo or the computer may be unable to access the website.
-    echo.
-    del "%langfile%" >nul 2>&1
-    pause
-    exit /b 1
-)
+:: JScript portion */
 
-if not exist "%langfile%" (
-    echo.
-    echo ERROR: Language list was not created.
-    pause
-    exit /b 1
-)
+// populate translation from locale identifier hex value to WinRAR language label
+// http://msdn.microsoft.com/en-us/library/dd318693.aspx
+var abbrev={}, a=function(arr,val){for(var i=0;i<arr.length;i++)abbrev[arr[i]]=val};
+a(['1401','3c01','0c01','0801','2001','4001','2801','1c01','3801','2401'],'Arabic');
+a(['042b'],'Armenian');
+a(['082c','042c'],'Azerbaijani');
+a(['0423'],'Belarusian');
+a(['0402'],'Bulgarian');
+a(['0403'],'Catalan');
+a(['7c04'],'Chinese Traditional');
+a(['0c04','1404','1004','0004'],'Chinese Simplified');
+a(['101a'],'Croatian');
+a(['0405'],'Czech');
+a(['0406'],'Danish');
+a(['0813','0413'],'Dutch');
+a(['0425'],'Estonian');
+a(['040b'],'Finnish');
+a(['080c','0c0c','040c','140c','180c','100c'],'French');
+a(['0437'],'Georgian');
+a(['0c07','0407','1407','1007','0807'],'German');
+a(['0408'],'Greek');
+a(['040d'],'Hebrew');
+a(['040e'],'Hungarian');
+a(['0421'],'Indonesian');
+a(['0410','0810'],'Italian');
+a(['0411'],'Japanese');
+a(['0412'],'Korean');
+a(['0427'],'Lithuanian');
+a(['042f'],'Macedonian');
+a(['0414','0814'],'Norwegian');
+a(['0429'],'Persian');
+a(['0415'],'Polish');
+a(['0816'],'Portuguese');
+a(['0416'],'Portuguese Brazilian');
+a(['0418'],'Romanian');
+a(['0419'],'Russian');
+a(['7c1a','1c1a','0c1a'],'Serbian Cyrillic');
+a(['181a','081a'],'Serbian Latin');
+a(['041b'],'Slovak');
+a(['0424'],'Slovenian');
+a(['2c0a','400a','340a','240a','140a','1c0a','300a','440a','100a','480a','080a','4c0a','180a','3c0a','280a','500a','0c0a','040a','540a','380a','200a'],'Spanish');
+a(['081d','041d'],'Swedish');
+a(['041e'],'Thai');
+a(['041f'],'Turkish');
+a(['0422'],'Ukranian');
+a(['0843','0443'],'Uzbek');
+a(['0803'],'Valencian');
+a(['042a'],'Vietnamese');
 
-:: ------------------------------------
-:: Read language list
-:: ------------------------------------
+function language() {
+    var os = GetObject('winmgmts:').ExecQuery('select Locale from Win32_OperatingSystem');
+    var locale = new Enumerator(os).item().Locale;
 
-echo.
-echo Available WinRAR languages:
-echo =============================
-echo.
+    // default to English if locale is not in abbrev{}
+    return abbrev[locale.toLowerCase()] || 'English';
+}
 
-setlocal EnableDelayedExpansion
+function fetch(url) {
+    var xObj = new ActiveXObject("Microsoft.XMLHTTP");
+    xObj.open("GET",url,true);
+    xObj.setRequestHeader('User-Agent','XMLHTTP/1.0');
+    xObj.send('');
+    while (xObj.readyState != 4) WSH.Sleep(50);
+    return(xObj);
+}
 
-set "count=0"
+function save(xObj, file) {
+    var stream = new ActiveXObject("ADODB.Stream");
+    with (stream) {
+        type = 1; // binary
+        open();
+        write(xObj.responseBody);
+        saveToFile(file, 2); // overwrite
+        close();
+    }
+}
 
-for /f "usebackq tokens=1,* delims=|" %%A in ("%langfile%") do (
-    set /a count+=1
-    set "lang[!count!]=%%A"
-    set "url[!count!]=%%B"
+// fetch the initial web page
+var x = fetch(WSH.Arguments(0));
 
-    echo [!count!] %%A
-)
+// make HTML response all one line
+var html = x.responseText.split(/\r?\n/).join('');
 
-echo.
+// get OS architecture (This method is much faster than the Win32_Processor.AddressWidth method)
+var os = GetObject('winmgmts:').ExecQuery('select OSArchitecture from Win32_OperatingSystem');
+var arch = /\d+/.exec(new Enumerator(os).item().OSArchitecture) * 1;
 
-if "!count!"=="0" (
-    echo ERROR: RARLAB returned no supported languages.
-    echo.
-    endlocal
-    del "%langfile%" >nul 2>&1
-    pause
-    exit /b 1
-)
+// get link matching *.exe where the link text contains system language and architecture
+var r = new RegExp('<a\\s*href="[^"]+\\.exe(?=[^\\/]+' + language() + '[^<]+' + arch + '\\Wbit)');
+var link = r.exec(html)
 
-:: ------------------------------------
-:: Ask user for language
-:: ------------------------------------
+// use only the stuff after the quotation mark to the end
+var dl = '' + /[^"]+$/.exec(link);
 
-:LANGUAGECHOICE
+// if the location is a relative path, prepend the domain
+if (dl.substring(0,1) == '/') dl = /.+:\/\/[^\/]+/.exec(WSH.Arguments(0)) + dl;
 
-echo.
-set /p "langchoice=Select a language [1-!count!]: "
+// target is path\filename
+var target=WSH.Arguments(1) + '\\' + /[^\/]+$/.exec(dl)
 
-if not defined langchoice (
-    echo.
-    echo Please select a language.
-    goto :LANGUAGECHOICE
-)
+// echo without a new line
+WSH.StdOut.Write('Saving ' + target + '... ');
 
-:: Verify that selection is numeric
-for /f "delims=0123456789" %%A in ("!langchoice!") do (
-    if not "%%A"=="" (
-        echo.
-        echo Invalid selection.
-        goto :LANGUAGECHOICE
-    )
-)
+// fetch file and save it
+save(fetch(dl), target);
 
-if !langchoice! LSS 1 (
-    echo.
-    echo Invalid selection.
-    goto :LANGUAGECHOICE
-)
-
-if !langchoice! GTR !count! (
-    echo.
-    echo Invalid selection.
-    goto :LANGUAGECHOICE
-)
-
-set "selectedlanguage=!lang[%langchoice%]!"
-set "download_link=!url[%langchoice%]!"
-
-if not defined download_link (
-    echo.
-    echo ERROR: The selected language has no download URL.
-    echo.
-    endlocal
-    del "%langfile%" >nul 2>&1
-    pause
-    exit /b 1
-)
-
-:: ------------------------------------
-:: Determine actual filename from URL
-:: ------------------------------------
-
-for %%F in ("!download_link!") do set "filename=%%~nxF"
-
-echo.
-echo =============================
-echo Selected language:
-echo !selectedlanguage!
-echo.
-echo Download URL:
-echo !download_link!
-echo.
-echo Filename:
-echo !filename!
-echo =============================
-echo.
-
-:: ------------------------------------
-:: Download official RARLAB installer
-:: ------------------------------------
-
-echo Downloading WinRAR...
-echo.
-
-curl.exe -L --fail --silent --show-error ^
-    -o "%savepath%\!filename!" ^
-    "!download_link!"
-
-if errorlevel 1 (
-    echo.
-    echo ERROR: WinRAR download failed.
-    echo.
-    del "%langfile%" >nul 2>&1
-    endlocal
-    pause
-    exit /b 1
-)
-
-:: ------------------------------------
-:: Verify download
-:: ------------------------------------
-
-if not exist "%savepath%\!filename!" (
-    echo.
-    echo ERROR: Download completed but installer was not found.
-    echo.
-    del "%langfile%" >nul 2>&1
-    endlocal
-    pause
-    exit /b 1
-)
-
-echo.
-echo Download complete:
-echo "%savepath%\!filename!"
-echo.
-
-:: ------------------------------------
-:: Clean up
-:: ------------------------------------
-
-del "%langfile%" >nul 2>&1
-
-endlocal
-
-goto :CHECKINSTALLER
+WSH.Echo('Done.');
