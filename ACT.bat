@@ -256,6 +256,7 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
 )
 
 for %%A in ("%kgpath%") do set "kgroot=%%~dpA"
+set "kgroot=%kgroot:~0,-1%"
 
 ECHO.
 ECHO KG root: "%kgroot%"
@@ -286,10 +287,7 @@ EXIT /b
 ====================================
 COLOR 1F
 
-REM Adding double quote before the variable mypath in the line set will fail the registration
-SET mypath=%keygenroot%\rarreg.key"
-
-xcopy /s /x /y "%mypath:~0,-1%" "%winrarpath%\"
+xcopy /s /x /y "%keygenroot%\rarreg.key" "%winrarpath%\"
 
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%\WinRAR.exe"
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%"
