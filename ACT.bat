@@ -230,9 +230,9 @@ REM ====================================
 :MANUALDL
 REM ====================================
 ECHO.
-ECHO The script expects a file called winrar-keygen-%bit%.exe in "%temppath%". Ensure existence of the medicine in the specified folder before proceeding...
-PAUSE
-IF EXIST "%temppath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :PREREGISTRATION )
+ECHO The script expects a file named winrar-keygen-%bit%.exe in "%temppath%". Ensure existence of the medicine in the specified folder before proceeding...
+>nul pause
+IF EXIST "%temppath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && goto :REGISTRATION ) ELSE ( ECHO. && ECHO Medicine not found. && goto :PREREGISTRATION )
 EXIT /b
 
 REM ====================================
@@ -240,7 +240,7 @@ REM ====================================
 REM ====================================
 ECHO.
 ECHO This is just a placeholder for future improvement. Silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly
-
+>nul pause
 IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%savepath%\winrar-keygen-%bit%.exe" "%temppath%" && goto :REGISTRATION ) ELSE ( ECHO Medicine not found. && goto :PREREGISTRATION )
 EXIT /b
 
