@@ -195,10 +195,13 @@ ECHO [a] Auto-download from source repository
 ECHO [b] Manually download from source repository (WARNING: Not recommended if you don't know where to get it from)
 ECHO [c] Build from source (WARNING: This is the recommended method but it might take up a lot of space)
 set /p "QUERYPREREG= Please select from the choices above: "
-IF /i "%QUERYPREREG%"=="" ( ECHO. && ECHO Invalid. && GOTO :PREREGISTRATION )
-IF /i "%QUERYPREREG%"=="a" goto :AUTODLFROMSRC
-IF /i "%QUERYPREREG%"=="b" goto :MANUALDL
-IF /i "%QUERYPREREG%"=="c" goto :AUTOBUILDFROMSRC
+IF /i "%QUERYPREREG%"=="a" GOTO :AUTODLFROMSRC
+IF /i "%QUERYPREREG%"=="b" GOTO :MANUALDL
+IF /i "%QUERYPREREG%"=="c" GOTO :AUTOBUILDFROMSRC
+
+ECHO.
+ECHO Input invalid.
+GOTO :PREREGISTRATION
 
 EXIT /b
 
