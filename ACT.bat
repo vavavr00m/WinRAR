@@ -271,7 +271,7 @@ for /F "tokens=1,2 delims=#" %%a in ('"prompt #$H#$E# & echo on & for %%b in (1)
 )
 
 ECHO.
-IF EXIST "%keygenroot%\rarreg.key" (
+IF EXIST "%kgroot%\rarreg.key" (
     ECHO rarreg.key exists
 ) ELSE (
     ECHO rarreg.key not found
@@ -286,7 +286,7 @@ EXIT /b
 ====================================
 COLOR 1F
 
-xcopy /s /x /y %keygenroot%\rarreg.key" "%winrarpath%\"
+xcopy /s /x /y "%kgroot%\rarreg.key" "%winrarpath%\"
 
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%\WinRAR.exe"
 start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%"
