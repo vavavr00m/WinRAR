@@ -241,12 +241,10 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in savepath:
     ECHO "%savepath%\winrar-keygen-%bit%.exe"
     set "keygenpath=%savepath%\winrar-keygen-%bit%.exe"
-    set "keygenroot=%~dpkeygenpath"
 ) ELSE IF EXIST "%temppath%\winrar-keygen-%bit%.exe" (
     ECHO Found executable in temppath:
     ECHO "%temppath%\winrar-keygen-%bit%.exe"
     set "keygenpath=%temppath%\winrar-keygen-%bit%.exe"
-    set "keygenroot=%~dpkeygenpath"
 ) ELSE (
     ECHO ERROR: Could not find the executable.
     ECHO.
@@ -255,6 +253,8 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" (
     ECHO "%temppath%\winrar-keygen-%bit%.exe"
     EXIT /B 1
 )
+
+for %%A in ("%keygenpath%") do set "keygenroot=%%~dpA"
 
 ECHO.
 ECHO KG root: "%keygenroot%"
