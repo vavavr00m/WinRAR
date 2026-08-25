@@ -88,9 +88,9 @@ CLS
 
 IF EXIST "%PROGRAMFILES(X86)%" ( GOTO :64BIT ) ELSE ( GOTO :32BIT )
 
-====================================
+:: ====================================
 :64BIT
-====================================
+:: ====================================
 set bit=x64
 set notbit=x86
 ECHO.
@@ -98,9 +98,9 @@ ECHO This is a %bit% operating system
 set "winrarpath=%PROGRAMFILES%\WinRAR"
 goto :SETTEMPDIR
 
-====================================
+:: ====================================
 :32BIT
-====================================
+:: ====================================
 set bit=x86
 set notbit=x64
 ECHO.
@@ -109,9 +109,9 @@ ECHO.
 set "winrarpath=%PROGRAMFILES(X86)%\WinRAR"
 goto :SETTEMPDIR
 
-====================================
+:: ====================================
 :SETTEMPDIR
-====================================
+:: ====================================
 ECHO.
 
 cd /d "%USERPROFILE%\Downloads\"
@@ -141,16 +141,16 @@ if not exist "%temppath%" (
 goto :CHECKIFINSTALLED
 EXIT /b
 
-====================================
+:: ====================================
 :CHECKIFINSTALLED
-====================================
+:: ====================================
 ECHO.
 IF EXIST "%winrarpath%\winrar.exe" ( ECHO WinRAR is installed. && goto :PREREGISTRATION ) ELSE ( ECHO WinRAR undetected. && goto :DOWNLOADER )
-EXIT b\
+EXIT /b
 
-====================================
+:: ====================================
 :CHECKINSTALLER
-====================================
+:: ====================================
 ECHO.
 ECHO Checking installer..
 ECHO.
@@ -158,34 +158,34 @@ IF EXIST "%savepath%\winrar-%bit%-*.exe" ( ECHO Successfully downloaded. && goto
 pause>nul
 EXIT /b
 
-====================================
+:: ====================================
 :CHECKINSTALLERFILEPATH
-====================================
+:: ====================================
 ECHO.
 FOR %%f IN ( "%savepath%\winrar-%bit%-*.exe" ) do set "installerpath=%%f"
 IF EXIST "%installerpath%" ( ECHO "%installerpath%" exists && goto :STARTINSTALL ) ELSE ( ECHO Unable to locate WinRAR installer. && goto :ASKINSTALLERFILEPATH )
 pause>nul
 EXIT /b
 
-====================================
+:: ====================================
 :ASKINSTALLERFILEPATH
-====================================
+:: ====================================
 ECHO.
 set /p "installerpath=What is the full path to the installer? "
 IF [%installerpath%] EQU [] ( goto :ASKINSTALLERFILEPATH ) ELSE ( goto :STARTINSTALL )
 EXIT /b
 
-====================================
+:: ====================================
 :STARTINSTALL
-====================================
+:: ====================================
 ECHO.
 ECHO Installing..
 start "" /wait "%installerpath%" /S && goto :CHECKIFINSTALLED
 EXIT /b
 
-====================================
+:: ====================================
 :PREREGISTRATION
-====================================
+:: ====================================
 ECHO.
 ECHO Downloading medicine..
 SET "URL=https://github.com/bitcookies/winrar-keygen"
@@ -206,9 +206,9 @@ IF EXIST "%savepath%\winrar-keygen-%bit%.exe" ( ECHO Medicine found && MOVE "%sa
 
 EXIT /b
 
-====================================
+:: ====================================
 :BUILDFROMSRC
-====================================
+:: ====================================
 ECHO.
 ECHO "This is just a placeholder for future improvement. Silently detect/download/install requirements of MSbuild and kg project to be able to compile from source seamlessly"
 set /p "QUERYBUILD=Do you want to compile from source [y/n]? "
@@ -217,9 +217,9 @@ IF /i "%QUERYBUILD%"=="y" call :COMPILE
 IF /i "%QUERYBUILD%"=="n" goto :REGISTRATION 
 EXIT /b
 
-====================================
+:: ====================================
 :REGISTRATION
-====================================
+:: ====================================
 ECHO.
 
 set /p "input=What is the name to be registered? "
@@ -281,9 +281,9 @@ IF EXIST "%kgroot%\rarreg.key" (
 GOTO :Beginoffile
 EXIT /b
 
-====================================
+:: ====================================
 :Beginoffile
-====================================
+:: ====================================
 COLOR 1F
 
 xcopy /s /x /y "%kgroot%\rarreg.key" "%winrarpath%\"
@@ -294,9 +294,9 @@ start /min /wait "" %SystemRoot%\explorer.exe "%winrarpath%"
 GOTO :leftovers
 EXIT /b
 
-====================================
+:: ====================================
 :leftovers
-====================================
+:: ====================================
 ECHO.
 echo Deleting leftovers..
 REM adding double quotes fail deletion if files are in desktop -- need investigation
@@ -305,18 +305,18 @@ IF EXIST "%temppath%" ( ECHO Temp folder exists. Deleting.. && RMDIR /S /Q "%tem
 goto :final
 EXIT /b
 
-====================================
+:: ====================================
 :final
-====================================
+:: ====================================
 ECHO.
 ECHO In WinRAR window, choose HELP, select ABOUT WinRAR and check active status. If unsuccessful, please try again or report to https://github.com/vavavr00m/WinRAR.
 ECHO.
 PAUSE>nul
 EXIT /b
 
-====================================
+:: ====================================
 :DOWNLOADER
-====================================
+:: ====================================
 @echo off
 ECHO.
 ECHO =============================
@@ -345,31 +345,39 @@ if not exist "%savepath%" (
 
 echo Retrieving available WinRAR languages...
 echo.
-
 set "langfile=%temp%\winrar_languages_%RANDOM%.txt"
-
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$ErrorActionPreference='Stop';" ^
-    "$html=(Invoke-WebRequest -UseBasicParsing '%url%').Content;" ^
-    "$rows=[regex]::Matches($html,'(?is)<tr[^>]*>.*?</tr>');" ^
-    "foreach($row in $rows) {" ^
-    "  $text=$row.Value;" ^
-    "  $link=[regex]::Match($text,'(?is)href\s*=\s*[""'' ]?([^""'' >]*winrar-x64-[^""'' >]*\.exe)');" ^
-    "  if(!$link.Success) { continue };" ^
-    "  $name=[regex]::Match($text,'(?is)<a[^>]*href\s*=\s*[""'' ]?[^""'' >]*winrar-x64-[^""'' >]*\.exe[^""'' >]*[""'' ]?[^>]*>\s*(.*?)\s*</a>');" ^
-    "  if(!$name.Success) { continue };" ^
-    "  $lang=[regex]::Replace($name.Groups[1].Value,'<[^>]+>','').Trim();" ^
-    "  if(!$lang) { continue };" ^
-    "  $href=$link.Groups[1].Value;" ^
-    "  if($href.StartsWith('/')) { $href='https://www.rarlab.com'+$href };" ^
-    "  elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') };" ^
-    "  Write-Output ($lang+'|'+$href);" ^
+    "try {" ^
+    "  $html=(Invoke-WebRequest -UseBasicParsing '%url%').Content;" ^
+    "  $rows=[regex]::Matches($html,'(?is)<tr[^>]*>.*?</tr>');" ^
+    "  if ($rows.Count -eq 0) { throw 'No <tr> rows matched on the RARLAB download page - the page markup has likely changed and the scraper regex needs updating.' };" ^
+    "  $matched=0;" ^
+    "  foreach($row in $rows) {" ^
+    "    $text=$row.Value;" ^
+    "    $link=[regex]::Match($text,'(?is)href\s*=\s*[""'' ]?([^""'' >]*winrar-%bit%-[^""'' >]*\.exe)');" ^
+    "    if(!$link.Success) { continue };" ^
+    "    $name=[regex]::Match($text,'(?is)<a[^>]*href\s*=\s*[""'' ]?[^""'' >]*winrar-%bit%-[^""'' >]*\.exe[^""'' >]*[""'' ]?[^>]*>\s*(.*?)\s*</a>');" ^
+    "    if(!$name.Success) { continue };" ^
+    "    $lang=[regex]::Replace($name.Groups[1].Value,'<[^>]+>','').Trim();" ^
+    "    if(!$lang) { continue };" ^
+    "    $href=$link.Groups[1].Value;" ^
+    "    if($href.StartsWith('/')) { $href='https://www.rarlab.com'+$href };" ^
+    "    elseif($href -notmatch '^https?://') { $href='https://www.rarlab.com/'+$href.TrimStart('/') };" ^
+    "    Write-Output ($lang+'|'+$href);" ^
+    "    $matched++;" ^
+    "  };" ^
+    "  if ($matched -eq 0) { throw ('Parsed ' + $rows.Count + ' table rows but found no winrar-%bit%- download links in any of them - RARLAB markup may have changed, or no %bit% build is currently listed.') };" ^
+    "} catch {" ^
+    "  Write-Error $_.Exception.Message;" ^
+    "  exit 1;" ^
     "}" > "%langfile%"
-
 if errorlevel 1 (
     echo.
-    echo ERROR: Failed to parse the RARLAB download page.
+    echo ERROR: Failed to parse the RARLAB download page - see message above.
+    echo ^(This usually means RARLAB changed the page's HTML layout and the scraper regex needs updating.^)
     echo.
+    del "%langfile%" >nul 2>&1
     pause
     exit /b 1
 )
