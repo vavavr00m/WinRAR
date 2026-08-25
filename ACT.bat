@@ -190,12 +190,12 @@ REM ====================================
 REM ====================================
 
 ECHO.
-set /p "QUERYPREREG=How do you want to obtain the medicine? "
+ECHO How do you want to obtain the medicine?
 ECHO [a] Auto-download from source repository
 ECHO [b] Manually download from source repository (WARNING: Not recommended if you don't know where to get it from)
 ECHO [c] Build from source (WARNING: This is the recommended method but it might take up a lot of space)
-PAUSE
-IF /i "%QUERYPREREG%"=="" ECHO Incorrect entry && goto :PREREGISTRATION
+set /p "QUERYPREREG= Please select from the choices above: "
+IF /i "%QUERYPREREG%"=="" ECHO. && ECHO Invalid. && goto :PREREGISTRATION
 IF /i "%QUERYPREREG%"=="a" goto :AUTODLFROMSRC
 IF /i "%QUERYPREREG%"=="b" goto :MANUALDL
 IF /i "%QUERYPREREG%"=="c" goto :AUTOBUILDFROMSRC
