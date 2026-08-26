@@ -249,56 +249,64 @@ REM ==================================== STEP 1 ================================
 REM Detect repo's default branch, download main source and extract to C:
 REM ==================================== STEP 1 ====================================
 
+ECHO.
+ECHO ============================================
+ECHO Downloading latest source...
+ECHO ============================================
+ECHO.
+
 setlocal
 
 set "REPO=bitcookies/winrar-keygen"
-set "ZIPFILE=%temppath%\HEAD.zip"
+set "ZIPFILE=%temppath%\master.zip"
 
-echo Downloading latest source...
-
-curl -fL -o "%ZIPFILE%" "https://github.com/%REPO%/archive/refs/heads/HEAD.zip"
+curl -LO --output-dir "%temppath%" "https://github.com/%REPO%/archive/refs/heads/master.zip"
 
 if errorlevel 1 (
     echo.
     echo Download failed.
+	pause >nul
     exit /b 1
 )
 
 if not exist "%ZIPFILE%" (
     echo.
     echo Download failed: file was not created.
+	pause >nul
     exit /b 1
 )
 
 for %%A in ("%ZIPFILE%") do if %%~zA==0 (
     echo.
     echo Download failed: file is empty.
+	pause >nul
     exit /b 1
 )
 
-powershell -NoProfile -Command "try { [System.IO.Compression.ZipFile]::OpenRead('%ZIPFILE%').Dispose(); exit 0 } catch { exit 1 }"
+powershell -NoProfile -Command "try { Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead('%ZIPFILE%'); $zip.Dispose(); exit 0 } catch { Write-Host $_.Exception.Message; exit 1 }"
 
 if errorlevel 1 (
     echo.
     echo Download failed: file is not a valid ZIP archive.
+    pause >nul
     exit /b 1
 )
 
 echo.
 echo Download successful.
-echo ZIP verified:
-echo "%ZIPFILE%"
+echo ZIP verified: "%ZIPFILE%"
 
 endlocal
-
-pause >nul
 
 REM ==================================== STEP 2 ====================================
 REM Download the latest hMSBuild.bat from source's repo and move it to C:\Windows
 REM ==================================== STEP 2 ====================================
 
 ECHO.
-ECHO Downloading the latest hMSBuild release from its repo
+ECHO ============================================
+ECHO Downloading the latest hMSBuild release...
+ECHO ============================================
+ECHO.
 
 set "HMSBUILD=%SystemRoot%\hMSBuild.bat"
 
@@ -307,26 +315,27 @@ curl -LO --output-dir "%SystemRoot%" https://github.com/3F/hMSBuild/releases/lat
 if errorlevel 1 (
     ECHO.
     ECHO Download failed.
+	pause >nul
     exit /b 1
 )
 
 if not exist "%HMSBUILD%" (
     ECHO.
     ECHO Download failed: file was not created.
+	pause >nul
     exit /b 1
 )
 
 for %%A in ("%HMSBUILD%") do if %%~zA==0 (
     ECHO.
     ECHO Download failed: file is empty.
+	pause >nul
     exit /b 1
 )
 
 ECHO.
 ECHO Download successful.
-ECHO File verified:
-ECHO "%HMSBUILD%"
-pause >nul
+ECHO BAT verified: "%HMSBUILD%"
 
 REM ==================================== STEP 3 ====================================
 REM Check build requirements
