@@ -291,6 +291,8 @@ echo "%ZIPFILE%"
 
 endlocal
 
+pause >nul
+
 REM ==================================== STEP 2 ====================================
 REM Download the latest hMSBuild.bat from source's repo and move it to C:\Windows
 REM ==================================== STEP 2 ====================================
