@@ -251,14 +251,14 @@ REM ==================================== STEP 1 ================================
 
 ECHO.
 ECHO ============================================
-ECHO Downloading latest source...
+ECHO Retrieving latest source...
 ECHO ============================================
 ECHO.
 
 setlocal
 
 set "REPO=bitcookies/winrar-keygen"
-set "ZIPFILE=%temppath%\master.zip"
+set "KGMASTERZIP=%temppath%\master.zip"
 
 curl -LO --output-dir "%temppath%" "https://github.com/%REPO%/archive/refs/heads/master.zip"
 
@@ -269,21 +269,21 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist "%ZIPFILE%" (
+if not exist "%KGMASTERZIP%" (
     echo.
     echo Download failed: file was not created.
 	pause >nul
     exit /b 1
 )
 
-for %%A in ("%ZIPFILE%") do if %%~zA==0 (
+for %%A in ("%KGMASTERZIP%") do if %%~zA==0 (
     echo.
     echo Download failed: file is empty.
 	pause >nul
     exit /b 1
 )
 
-powershell -NoProfile -Command "try { Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead('%ZIPFILE%'); $zip.Dispose(); exit 0 } catch { Write-Host $_.Exception.Message; exit 1 }"
+powershell -NoProfile -Command "try { Add-Type -AssemblyName System.IO.Compression.FileSystem; $zip = [System.IO.Compression.ZipFile]::OpenRead('%KGMASTERZIP%'); $zip.Dispose(); exit 0 } catch { Write-Host $_.Exception.Message; exit 1 }"
 
 if errorlevel 1 (
     echo.
@@ -294,7 +294,13 @@ if errorlevel 1 (
 
 echo.
 echo Download successful.
-echo ZIP verified: "%ZIPFILE%"
+echo ZIP verified: "%KGMASTERZIP%"
+
+ECHO Extracting...
+
+powershell -NoProfile -Command "Expand-Archive -LiteralPath '%KGMASTERZIP%' -DestinationPath '.' -Force"
+
+tree "%temppath%\winrar-keygen-master\" /f
 
 endlocal
 
